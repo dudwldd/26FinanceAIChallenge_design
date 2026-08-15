@@ -12,8 +12,11 @@ from logic.portfolio import (
     PortfolioValidationError,
     calculate_average_correlation,
     calculate_concentration,
+    calculate_historical_portfolio_metrics,
     calculate_return_correlation,
     calculate_sector_concentration,
+    build_comparison_weights,
+    generate_portfolio_questions,
     validate_portfolio,
 )
 
@@ -243,6 +246,46 @@ if submitted:
                         "예측하거나 분산 효과를 단정하는 지표는 아닙니다."
                     )
 
+                    st.subheader("비중 비교를 통한 논리 점검")
+                    try:
+                        comparison_weights = build_comparison_weights(
+                            holdings, prices
+                        )
+                        historical_metrics = calculate_historical_portfolio_metrics(
+                            prices, comparison_weights
+                        )
+                    except PortfolioValidationError as exc:
+                        st.warning(f"비중 비교를 계산하지 못했습니다: {exc}")
+                    else:
+                        weight_table = (comparison_weights * 100).round(2)
+                        st.dataframe(weight_table, width="stretch")
+                        st.caption(
+                            "동일 비중과 역변동성 비중은 사용자의 현재 구성을 "
+                            "검토하기 위한 비교 기준이며, 추천하거나 따라야 할 목표 비중이 아닙니다."
+                        )
+
+                        display_metrics = historical_metrics.copy()
+                        for column in display_metrics.columns:
+                            display_metrics[column] = display_metrics[column].map(
+                                lambda value: f"{value * 100:.2f}%"
+                            )
+                        st.dataframe(display_metrics, width="stretch")
+                        st.caption(
+                            "모든 성과 수치는 동일한 최근 1년 과거 가격으로 계산되며, "
+                            "거래비용·세금·환율을 반영하지 않습니다. 과거 성과는 미래 성과를 보장하지 않습니다."
+                        )
+
+                        questions = generate_portfolio_questions(
+                            holdings,
+                            comparison_weights,
+                            str(sector_concentration["dominant_sector"]),
+                            float(sector_concentration["dominant_weight"]),
+                            average_correlation,
+                        )
+                        st.markdown("#### 추가로 점검할 질문")
+                        for question in questions:
+                            st.write(f"- {question}")
+
                 with st.expander("입력한 투자 논리와 응답 보기"):
                     st.write(f"포트폴리오 구성 논리: {thesis.strip()}")
                     st.write("핵심 근거: " + ", ".join(thesis_factors))
@@ -252,6 +295,6 @@ if submitted:
                     st.write(f"30% 하락 시 예상 대응: {loss_response}")
 
                 st.info(
-                    "현재 단계에서는 구성과 금융 데이터만 보여주며, "
-                    "포트폴리오 추천이나 최적 비중 계산은 하지 않습니다."
+                    "비교 비중은 사용자의 투자 논리를 점검하기 위한 참고 기준입니다. "
+                    "이 서비스는 포트폴리오 추천이나 목표 비중을 제공하지 않습니다."
                 )

@@ -1,6 +1,6 @@
 """Validate portfolio inputs and calculate simple concentration metrics."""
 
-from math import isclose, isnan
+from math import isclose, isnan, sqrt
 from typing import Any
 
 import pandas as pd
@@ -116,3 +116,96 @@ def calculate_average_correlation(correlation: pd.DataFrame) -> float | None:
         if pd.notna(correlation.iloc[row, column])
     ]
     return sum(values) / len(values) if values else None
+
+
+def build_comparison_weights(
+    holdings: list[dict[str, float | str]], prices: pd.DataFrame
+) -> pd.DataFrame:
+    """Build current, equal, and inverse-volatility comparison weights."""
+    tickers = [str(holding["ticker"]) for holding in holdings]
+    returns = prices[tickers].pct_change(fill_method=None).dropna(how="any")
+    if returns.empty:
+        raise PortfolioValidationError("비교 비중을 계산할 가격 데이터가 부족합니다.")
+
+    volatility = returns.std()
+    if volatility.isna().any() or (volatility <= 0).any():
+        raise PortfolioValidationError("일부 종목의 변동성을 계산할 수 없습니다.")
+
+    current = pd.Series(
+        {str(item["ticker"]): float(item["weight"]) / 100 for item in holdings}
+    ).reindex(tickers)
+    equal = pd.Series(1 / len(tickers), index=tickers)
+    inverse_volatility = (1 / volatility) / (1 / volatility).sum()
+
+    return pd.DataFrame(
+        {
+            "현재 비중": current,
+            "동일 비중": equal,
+            "역변동성 비교 비중": inverse_volatility.reindex(tickers),
+        }
+    )
+
+
+def calculate_historical_portfolio_metrics(
+    prices: pd.DataFrame, comparison_weights: pd.DataFrame
+) -> pd.DataFrame:
+    """Compare historical return, volatility, and drawdown by weight method."""
+    returns = prices[comparison_weights.index].pct_change(fill_method=None).dropna(
+        how="any"
+    )
+    metrics: list[dict[str, float | str]] = []
+
+    for name in comparison_weights.columns:
+        portfolio_returns = returns @ comparison_weights[name]
+        cumulative = (1 + portfolio_returns).cumprod()
+        drawdown = cumulative / cumulative.cummax() - 1
+        metrics.append(
+            {
+                "비교 기준": name,
+                "과거 1년 누적수익률": float(cumulative.iloc[-1] - 1),
+                "연환산 변동성": float(portfolio_returns.std() * sqrt(252)),
+                "최대 낙폭": float(drawdown.min()),
+            }
+        )
+
+    return pd.DataFrame(metrics).set_index("비교 기준")
+
+
+def generate_portfolio_questions(
+    holdings: list[dict[str, float | str]],
+    comparison_weights: pd.DataFrame,
+    dominant_sector: str,
+    dominant_weight: float,
+    average_correlation: float | None,
+) -> list[str]:
+    """Generate deterministic questions about material portfolio differences."""
+    questions: list[str] = []
+    current = comparison_weights["현재 비중"]
+    equal = comparison_weights["동일 비중"]
+
+    largest_gap_ticker = max(current.index, key=lambda ticker: abs(current[ticker] - equal[ticker]))
+    gap = float(current[largest_gap_ticker] - equal[largest_gap_ticker])
+    if abs(gap) >= 0.10:
+        direction = "높습니다" if gap > 0 else "낮습니다"
+        questions.append(
+            f"{largest_gap_ticker} 비중이 동일 비중보다 {abs(gap) * 100:.1f}%p "
+            f"{direction}. 이 차이를 설명하는 구체적인 근거는 무엇인가요?"
+        )
+
+    if dominant_weight >= 60:
+        questions.append(
+            f"{dominant_sector} 산업 비중이 {dominant_weight:.1f}%입니다. "
+            "이 산업에 공통으로 영향을 줄 수 있는 위험 요인을 확인했나요?"
+        )
+
+    if average_correlation is not None and average_correlation >= 0.70:
+        questions.append(
+            f"종목 간 과거 평균 상관계수가 {average_correlation:.2f}입니다. "
+            "종목 수가 아닌 위험 요인 기준에서도 분산되어 있다고 판단한 근거는 무엇인가요?"
+        )
+
+    if not questions:
+        questions.append(
+            "현재 비중을 동일 비중이나 변동성 기준과 다르게 구성한 핵심 근거는 무엇인가요?"
+        )
+    return questions

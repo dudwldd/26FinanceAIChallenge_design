@@ -7,8 +7,11 @@ from logic.portfolio import (
     PortfolioValidationError,
     calculate_average_correlation,
     calculate_concentration,
+    calculate_historical_portfolio_metrics,
     calculate_return_correlation,
     calculate_sector_concentration,
+    build_comparison_weights,
+    generate_portfolio_questions,
     validate_portfolio,
 )
 
@@ -102,3 +105,67 @@ def test_return_correlation_and_average() -> None:
     assert correlation.loc["AAPL", "MSFT"] == pytest.approx(1.0)
     assert correlation.loc["AAPL", "JPM"] == pytest.approx(-1.0)
     assert calculate_average_correlation(correlation) == pytest.approx(-1 / 3)
+
+
+def test_build_comparison_weights_sum_to_one() -> None:
+    """Every comparison method should produce fully invested weights."""
+    holdings = [
+        {"ticker": "AAPL", "weight": 70.0},
+        {"ticker": "MSFT", "weight": 30.0},
+    ]
+    prices = pd.DataFrame(
+        {
+            "AAPL": [100.0, 102.0, 101.0, 104.0],
+            "MSFT": [200.0, 201.0, 203.0, 202.0],
+        }
+    )
+
+    result = build_comparison_weights(holdings, prices)
+
+    assert result["현재 비중"].to_dict() == {"AAPL": 0.7, "MSFT": 0.3}
+    assert result["동일 비중"].to_dict() == {"AAPL": 0.5, "MSFT": 0.5}
+    assert all(total == pytest.approx(1.0) for total in result.sum())
+
+
+def test_historical_metrics_include_all_comparisons() -> None:
+    """Historical metrics should be calculated for each comparison column."""
+    holdings = [
+        {"ticker": "AAPL", "weight": 60.0},
+        {"ticker": "MSFT", "weight": 40.0},
+    ]
+    prices = pd.DataFrame(
+        {
+            "AAPL": [100.0, 102.0, 101.0, 104.0],
+            "MSFT": [200.0, 201.0, 203.0, 202.0],
+        }
+    )
+    weights = build_comparison_weights(holdings, prices)
+
+    result = calculate_historical_portfolio_metrics(prices, weights)
+
+    assert list(result.index) == ["현재 비중", "동일 비중", "역변동성 비교 비중"]
+    assert set(result.columns) == {"과거 1년 누적수익률", "연환산 변동성", "최대 낙폭"}
+
+
+def test_generate_questions_flags_large_weight_and_sector_gaps() -> None:
+    """Material concentration differences should produce validation questions."""
+    holdings = [
+        {"ticker": "AAPL", "weight": 80.0},
+        {"ticker": "JPM", "weight": 20.0},
+    ]
+    weights = pd.DataFrame(
+        {
+            "현재 비중": [0.8, 0.2],
+            "동일 비중": [0.5, 0.5],
+            "역변동성 비교 비중": [0.4, 0.6],
+        },
+        index=["AAPL", "JPM"],
+    )
+
+    questions = generate_portfolio_questions(
+        holdings, weights, "Technology", 80.0, 0.75
+    )
+
+    assert any("AAPL 비중" in question for question in questions)
+    assert any("Technology 산업" in question for question in questions)
+    assert any("평균 상관계수" in question for question in questions)

@@ -29,6 +29,12 @@ weight of the top two holdings. It also aggregates weights by sector and shows a
 one-year daily-return correlation matrix. Correlation is presented as historical
 context, not as a forecast or investment recommendation.
 
+For thesis checking, the app compares the user's weights with equal weights and
+inverse-volatility weights. It shows historical return, annualized volatility,
+and maximum drawdown under each weighting method, then generates deterministic
+questions about material differences. These are comparison references, not
+recommended or target allocations.
+
 ## Installation
 
 Python 3.10 or newer is recommended.
