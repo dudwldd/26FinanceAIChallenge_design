@@ -1,8 +1,8 @@
-# Investment Thesis Checker
+# Portfolio Thesis Checker
 
 A minimal Streamlit proof of concept that retrieves financial data to help users
-evaluate their own investment reasoning for US-listed stocks. It does not make
-buy/sell decisions or recommend securities.
+evaluate the reasoning behind a US-listed stock portfolio. It does not optimize
+portfolio weights, make buy/sell decisions, or recommend securities.
 
 ## Project structure
 
@@ -21,6 +21,11 @@ investment-checker/
 
 The `ai` interfaces and fact-checking module are placeholders for later stages.
 The current POC retrieves normalized data from yfinance only.
+
+Users can enter up to ten tickers and portfolio weights. The app validates that
+weights total 100%, rejects duplicate or malformed tickers, retrieves each
+holding's basic financial data, and displays the largest holding and combined
+weight of the top two holdings.
 
 ## Installation
 
@@ -50,12 +55,11 @@ required to run it. `.env` is excluded from Git.
 streamlit run app.py
 ```
 
-Enter a ticker and an investment thesis, answer the five multiple-choice
-questions, then select **Check my thesis**. The questions capture the thesis's
-main basis, decision trigger, evidence level, investment horizon, and likely
-response to a 30% loss. The app shows the submitted inputs and available
-financial data. It does not score the answers at this POC stage. Missing provider
-values are displayed as `null`.
+Enter portfolio tickers and weights, describe the portfolio thesis, answer the
+five multiple-choice questions, then select **Check my thesis**. The app shows
+simple concentration metrics and a table of available financial data. It does
+not score the answers or calculate optimal weights at this POC stage. Missing
+provider values are displayed as `null`.
 
 ## Run tests
 
