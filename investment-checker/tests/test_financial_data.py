@@ -1,8 +1,13 @@
 """Tests for normalized financial data retrieval."""
 
+import pandas as pd
 import pytest
 
-from data.financial_data import FinancialDataError, get_financial_data
+from data.financial_data import (
+    FinancialDataError,
+    get_financial_data,
+    get_historical_prices,
+)
 
 
 class FakeTicker:
@@ -19,6 +24,7 @@ class FakeTicker:
             "revenueGrowth": 0.05,
             "profitMargins": 0.24,
             "debtToEquity": 150.0,
+            "sector": "Technology",
         }
 
 
@@ -28,6 +34,7 @@ def test_get_financial_data_returns_normalized_structure() -> None:
 
     assert result["ticker"] == "AAPL"
     assert result["company_name"] == "Apple Inc."
+    assert result["company_profile"]["sector"] == "Technology"
     assert result["market_data"]["current_price"] == 200.0
     assert result["valuation"]["pe_ratio"] == 30.0
     assert result["growth"]["revenue_growth"] == 0.05
@@ -66,3 +73,27 @@ def test_get_financial_data_handles_empty_provider_response() -> None:
     with pytest.raises(FinancialDataError, match="No financial data"):
         get_financial_data("NONE", ticker_factory=EmptyTicker)
 
+
+def test_get_historical_prices_extracts_close_data() -> None:
+    """Multi-ticker downloads should return ordered adjusted close columns."""
+    columns = pd.MultiIndex.from_product([["Close"], ["MSFT", "AAPL"]])
+    downloaded = pd.DataFrame(
+        [[300.0, 200.0], [303.0, 202.0]], columns=columns
+    )
+
+    def fake_download(**kwargs: object) -> pd.DataFrame:
+        assert kwargs["tickers"] == ["AAPL", "MSFT"]
+        return downloaded
+
+    result = get_historical_prices(["aapl", "msft"], downloader=fake_download)
+
+    assert list(result.columns) == ["AAPL", "MSFT"]
+    assert result.iloc[0].to_dict() == {"AAPL": 200.0, "MSFT": 300.0}
+
+
+def test_get_historical_prices_handles_empty_response() -> None:
+    """An empty price response should become a readable provider error."""
+    with pytest.raises(FinancialDataError, match="No historical prices"):
+        get_historical_prices(
+            ["AAPL", "MSFT"], downloader=lambda **kwargs: pd.DataFrame()
+        )

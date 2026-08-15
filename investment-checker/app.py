@@ -3,10 +3,17 @@
 import pandas as pd
 import streamlit as st
 
-from data.financial_data import FinancialDataError, get_financial_data
+from data.financial_data import (
+    FinancialDataError,
+    get_financial_data,
+    get_historical_prices,
+)
 from logic.portfolio import (
     PortfolioValidationError,
+    calculate_average_correlation,
     calculate_concentration,
+    calculate_return_correlation,
+    calculate_sector_concentration,
     validate_portfolio,
 )
 
@@ -140,16 +147,20 @@ if submitted:
             st.error(str(exc))
         else:
             financial_rows = []
+            sectors = {}
             data_error = None
 
             try:
                 with st.spinner("종목별 금융 데이터를 불러오는 중입니다..."):
                     for holding in holdings:
                         financial_data = get_financial_data(str(holding["ticker"]))
+                        sector = financial_data["company_profile"]["sector"]
+                        sectors[str(holding["ticker"])] = sector
                         financial_rows.append(
                             {
                                 "Ticker": financial_data["ticker"],
                                 "회사명": financial_data["company_name"],
+                                "산업": sector,
                                 "비중 (%)": holding["weight"],
                                 "현재 주가": financial_data["market_data"]["current_price"],
                                 "시가총액": financial_data["market_data"]["market_cap"],
@@ -169,6 +180,9 @@ if submitted:
                 st.error(data_error)
             else:
                 concentration = calculate_concentration(holdings)
+                sector_concentration = calculate_sector_concentration(
+                    holdings, sectors
+                )
 
                 st.subheader("포트폴리오 구성")
                 metric_col1, metric_col2, metric_col3 = st.columns(3)
@@ -188,6 +202,48 @@ if submitted:
                     hide_index=True,
                     width="stretch",
                 )
+
+                st.subheader("산업 집중도")
+                sector_col1, sector_col2 = st.columns(2)
+                sector_col1.metric(
+                    "가장 큰 산업",
+                    str(sector_concentration["dominant_sector"]),
+                )
+                sector_col2.metric(
+                    "해당 산업 비중",
+                    f'{sector_concentration["dominant_weight"]:.2f}%',
+                )
+                sector_chart = pd.DataFrame(
+                    {
+                        "산업": sector_concentration["sector_weights"].keys(),
+                        "비중 (%)": sector_concentration["sector_weights"].values(),
+                    }
+                ).set_index("산업")
+                st.bar_chart(sector_chart)
+
+                st.subheader("최근 1년 수익률 상관관계")
+                try:
+                    prices = get_historical_prices(
+                        [str(holding["ticker"]) for holding in holdings]
+                    )
+                    correlation = calculate_return_correlation(prices)
+                    average_correlation = calculate_average_correlation(correlation)
+                except (FinancialDataError, PortfolioValidationError) as exc:
+                    st.warning(f"상관관계를 계산하지 못했습니다: {exc}")
+                else:
+                    if average_correlation is not None:
+                        st.metric("종목 간 평균 상관계수", f"{average_correlation:.2f}")
+                    st.dataframe(
+                        correlation.style.format("{:.2f}").background_gradient(
+                            cmap="RdYlGn_r", vmin=-1, vmax=1
+                        ),
+                        width="stretch",
+                    )
+                    st.caption(
+                        "상관계수는 -1에서 1 사이의 값입니다. 1에 가까울수록 "
+                        "같은 방향으로 움직인 경향이 강했다는 뜻이며, 미래 움직임을 "
+                        "예측하거나 분산 효과를 단정하는 지표는 아닙니다."
+                    )
 
                 with st.expander("입력한 투자 논리와 응답 보기"):
                     st.write(f"포트폴리오 구성 논리: {thesis.strip()}")

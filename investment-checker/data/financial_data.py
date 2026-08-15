@@ -4,6 +4,7 @@ from collections.abc import Callable, Mapping
 import re
 from typing import Any
 
+import pandas as pd
 import yfinance as yf
 
 
@@ -70,6 +71,7 @@ def get_financial_data(
     return {
         "ticker": normalized_ticker,
         "company_name": company_name,
+        "company_profile": {"sector": info.get("sector")},
         "market_data": {
             "current_price": current_price,
             "market_cap": info.get("marketCap"),
@@ -83,3 +85,44 @@ def get_financial_data(
         "financial_health": {"debt_to_equity": info.get("debtToEquity")},
     }
 
+
+def get_historical_prices(
+    tickers: list[str],
+    period: str = "1y",
+    downloader: Callable[..., pd.DataFrame] | None = None,
+) -> pd.DataFrame:
+    """Return adjusted closing prices for multiple tickers."""
+    normalized_tickers = [_normalize_ticker(ticker) for ticker in tickers]
+    if len(normalized_tickers) < 2:
+        raise FinancialDataError("At least two tickers are required for correlation.")
+
+    download = downloader or yf.download
+    try:
+        history = download(
+            tickers=normalized_tickers,
+            period=period,
+            auto_adjust=True,
+            progress=False,
+        )
+    except Exception as exc:
+        raise FinancialDataError(
+            "Could not retrieve historical prices. Please try again later."
+        ) from exc
+
+    if not isinstance(history, pd.DataFrame) or history.empty:
+        raise FinancialDataError("No historical prices were found for this portfolio.")
+
+    if isinstance(history.columns, pd.MultiIndex):
+        try:
+            prices = history["Close"]
+        except KeyError as exc:
+            raise FinancialDataError("Historical closing prices were not available.") from exc
+    elif "Close" in history.columns and len(normalized_tickers) == 1:
+        prices = history[["Close"]].rename(columns={"Close": normalized_tickers[0]})
+    else:
+        raise FinancialDataError("Historical closing prices were not available.")
+
+    prices = prices.reindex(columns=normalized_tickers).dropna(how="all")
+    if prices.empty or prices.count().min() < 2:
+        raise FinancialDataError("Not enough price history was available for correlation.")
+    return prices

@@ -3,6 +3,8 @@
 from math import isclose, isnan
 from typing import Any
 
+import pandas as pd
+
 
 MAX_HOLDINGS = 10
 
@@ -72,3 +74,45 @@ def calculate_concentration(
         "largest_weight": float(ranked[0]["weight"]),
         "top_two_weight": sum(float(item["weight"]) for item in ranked[:2]),
     }
+
+
+def calculate_sector_concentration(
+    holdings: list[dict[str, float | str]],
+    sectors: dict[str, str | None],
+) -> dict[str, Any]:
+    """Aggregate portfolio weights by sector and return the largest sector."""
+    sector_weights: dict[str, float] = {}
+    for holding in holdings:
+        ticker = str(holding["ticker"])
+        sector = sectors.get(ticker) or "Unknown"
+        sector_weights[sector] = sector_weights.get(sector, 0.0) + float(
+            holding["weight"]
+        )
+
+    dominant_sector = max(sector_weights, key=sector_weights.get)
+    return {
+        "sector_weights": dict(
+            sorted(sector_weights.items(), key=lambda item: item[1], reverse=True)
+        ),
+        "dominant_sector": dominant_sector,
+        "dominant_weight": sector_weights[dominant_sector],
+    }
+
+
+def calculate_return_correlation(prices: pd.DataFrame) -> pd.DataFrame:
+    """Calculate a return correlation matrix from historical prices."""
+    returns = prices.pct_change(fill_method=None).dropna(how="all")
+    if returns.empty:
+        raise PortfolioValidationError("상관관계를 계산할 가격 데이터가 부족합니다.")
+    return returns.corr()
+
+
+def calculate_average_correlation(correlation: pd.DataFrame) -> float | None:
+    """Return the mean of unique pairwise correlations."""
+    values = [
+        float(correlation.iloc[row, column])
+        for row in range(len(correlation.index))
+        for column in range(row + 1, len(correlation.columns))
+        if pd.notna(correlation.iloc[row, column])
+    ]
+    return sum(values) / len(values) if values else None

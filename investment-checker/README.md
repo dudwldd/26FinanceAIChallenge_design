@@ -25,7 +25,9 @@ The current POC retrieves normalized data from yfinance only.
 Users can enter up to ten tickers and portfolio weights. The app validates that
 weights total 100%, rejects duplicate or malformed tickers, retrieves each
 holding's basic financial data, and displays the largest holding and combined
-weight of the top two holdings.
+weight of the top two holdings. It also aggregates weights by sector and shows a
+one-year daily-return correlation matrix. Correlation is presented as historical
+context, not as a forecast or investment recommendation.
 
 ## Installation
 
@@ -58,8 +60,8 @@ streamlit run app.py
 Enter portfolio tickers and weights, describe the portfolio thesis, answer the
 five multiple-choice questions, then select **Check my thesis**. The app shows
 simple concentration metrics and a table of available financial data. It does
-not score the answers or calculate optimal weights at this POC stage. Missing
-provider values are displayed as `null`.
+not score the answers, forecast returns, or calculate optimal weights at this
+POC stage. Missing provider values are displayed as `null`.
 
 ## Run tests
 
