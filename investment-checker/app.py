@@ -234,9 +234,7 @@ if submitted:
                     if average_correlation is not None:
                         st.metric("종목 간 평균 상관계수", f"{average_correlation:.2f}")
                     st.dataframe(
-                        correlation.style.format("{:.2f}").background_gradient(
-                            cmap="RdYlGn_r", vmin=-1, vmax=1
-                        ),
+                        correlation.round(2),
                         width="stretch",
                     )
                     st.caption(
