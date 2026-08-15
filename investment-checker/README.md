@@ -2,7 +2,9 @@
 
 A minimal Streamlit proof of concept that retrieves financial data to help users
 evaluate the reasoning behind a US-listed stock portfolio. It does not optimize
-portfolio weights, make buy/sell decisions, or recommend securities.
+portfolio weights, make buy/sell decisions, or recommend securities. An optional
+AI layer classifies the thesis, separates supported and uncertain points, flags
+possible biases, and produces devil's-advocate questions.
 
 ## Project structure
 
@@ -10,8 +12,7 @@ portfolio weights, make buy/sell decisions, or recommend securities.
 investment-checker/
 ├── app.py
 ├── data/financial_data.py
-├── ai/claim_extractor.py
-├── ai/question_generator.py
+├── ai/portfolio_analyzer.py
 ├── logic/fact_check.py
 ├── tests/test_financial_data.py
 ├── requirements.txt
@@ -19,8 +20,9 @@ investment-checker/
 └── .gitignore
 ```
 
-The `ai` interfaces and fact-checking module are placeholders for later stages.
-The current POC retrieves normalized data from yfinance only.
+The financial-data layer currently retrieves normalized data from yfinance. The
+optional AI analysis uses OpenAI Structured Outputs so its result has a stable
+shape for the Streamlit UI.
 
 Users can enter up to ten tickers and portfolio weights. The app validates that
 weights total 100%, rejects duplicate or malformed tickers, retrieves each
@@ -54,8 +56,15 @@ Copy the example file if you plan to add Financial Modeling Prep later:
 cp .env.example .env
 ```
 
-Set `FMP_API_KEY` in `.env`. The current POC does not call FMP, so a key is not
-required to run it. `.env` is excluded from Git.
+Set `OPENAI_API_KEY` to enable the optional AI checkbox. `OPENAI_MODEL` defaults
+to `gpt-5.4-mini`. `FMP_API_KEY` is reserved for a later FMP integration. No key
+is required for the existing deterministic portfolio analysis, and `.env` is
+excluded from Git.
+
+```text
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-5.4-mini
+```
 
 ## Run the app
 
@@ -64,10 +73,13 @@ streamlit run app.py
 ```
 
 Enter portfolio tickers and weights, describe the portfolio thesis, answer the
-five multiple-choice questions, then select **Check my thesis**. The app shows
+five multiple-choice questions, optionally enable AI analysis, then select
+**Check my thesis**. The app shows
 simple concentration metrics and a table of available financial data. It does
 not score the answers, forecast returns, or calculate optimal weights at this
-POC stage. Missing provider values are displayed as `null`.
+POC stage. Missing provider values are displayed as `null`. When AI analysis is
+enabled, the thesis and the displayed portfolio-data summary are sent to the
+OpenAI API; they are not stored by this app.
 
 ## Run tests
 

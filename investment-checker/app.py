@@ -1,8 +1,12 @@
 """Streamlit entry point for the Investment Thesis Checker POC."""
 
+import os
+
 import pandas as pd
 import streamlit as st
+from dotenv import load_dotenv
 
+from ai.portfolio_analyzer import AIAnalysisError, analyze_portfolio_thesis
 from data.financial_data import (
     FinancialDataError,
     get_financial_data,
@@ -67,6 +71,23 @@ LOSS_RESPONSES = [
 ]
 
 
+load_dotenv()
+
+
+def get_openai_api_key() -> str | None:
+    """Read the OpenAI API key from environment or Streamlit secrets."""
+    environment_key = os.getenv("OPENAI_API_KEY")
+    if environment_key:
+        return environment_key
+    try:
+        return st.secrets.get("OPENAI_API_KEY")
+    except FileNotFoundError:
+        return None
+
+
+openai_api_key = get_openai_api_key()
+
+
 st.set_page_config(page_title="Portfolio Thesis Checker")
 st.title("Portfolio Thesis Checker")
 st.caption("포트폴리오를 추천하지 않고, 입력한 구성과 투자 논리를 점검합니다.")
@@ -127,6 +148,18 @@ with st.form("thesis_form"):
         LOSS_RESPONSES,
         index=None,
     )
+
+    use_ai_analysis = st.checkbox(
+        "AI로 투자 논리와 데이터의 부합 여부를 추가 분석합니다.",
+        value=False,
+        disabled=not bool(openai_api_key),
+        help=(
+            "선택하면 입력한 투자 논리와 화면에 표시된 금융 데이터 요약이 "
+            "OpenAI API로 전송됩니다. 매수·매도 추천은 생성하지 않습니다."
+        ),
+    )
+    if not openai_api_key:
+        st.caption("AI 분석을 사용하려면 OPENAI_API_KEY를 설정해주세요.")
 
     submitted = st.form_submit_button("Check my thesis")
 
@@ -285,6 +318,67 @@ if submitted:
                         st.markdown("#### 추가로 점검할 질문")
                         for question in questions:
                             st.write(f"- {question}")
+
+                        if use_ai_analysis:
+                            ai_context = {
+                                "holdings": holdings,
+                                "financial_data": financial_rows,
+                                "sector_concentration": sector_concentration,
+                                "average_correlation": average_correlation,
+                                "comparison_weights_percent": weight_table.to_dict(),
+                                "historical_metrics": historical_metrics.to_dict(),
+                                "questionnaire": {
+                                    "thesis_factors": thesis_factors,
+                                    "decision_trigger": decision_trigger,
+                                    "evidence_level": evidence_level,
+                                    "investment_horizon": investment_horizon,
+                                    "loss_response": loss_response,
+                                },
+                            }
+                            try:
+                                with st.spinner("AI가 투자 논리를 검증하는 중입니다..."):
+                                    ai_analysis = analyze_portfolio_thesis(
+                                        thesis.strip(),
+                                        ai_context,
+                                        api_key=openai_api_key,
+                                    )
+                            except AIAnalysisError as exc:
+                                st.warning(str(exc))
+                            else:
+                                st.subheader("AI 투자 논리 검증")
+                                st.write(ai_analysis.summary)
+                                st.write(
+                                    "분류: " + ", ".join(ai_analysis.categories)
+                                )
+
+                                st.markdown("#### 데이터와 부합하는 부분")
+                                if ai_analysis.supported_points:
+                                    for point in ai_analysis.supported_points:
+                                        st.write(f"- {point}")
+                                else:
+                                    st.write("- 현재 데이터만으로 확인된 부분이 없습니다.")
+
+                                st.markdown("#### 확인되지 않거나 보완이 필요한 부분")
+                                if ai_analysis.uncertain_points:
+                                    for point in ai_analysis.uncertain_points:
+                                        st.write(f"- {point}")
+                                else:
+                                    st.write("- 별도로 식별된 항목이 없습니다.")
+
+                                st.markdown("#### 편향 가능성")
+                                if ai_analysis.possible_biases:
+                                    for bias in ai_analysis.possible_biases:
+                                        st.write(f"- {bias}")
+                                else:
+                                    st.write("- 현재 입력에서 뚜렷한 편향을 확인하기 어렵습니다.")
+
+                                st.markdown("#### AI 반대심문 질문")
+                                for question in ai_analysis.devils_advocate_questions:
+                                    st.write(f"- {question}")
+
+                                with st.expander("AI 분석의 데이터 한계"):
+                                    for limitation in ai_analysis.data_limitations:
+                                        st.write(f"- {limitation}")
 
                 with st.expander("입력한 투자 논리와 응답 보기"):
                     st.write(f"포트폴리오 구성 논리: {thesis.strip()}")

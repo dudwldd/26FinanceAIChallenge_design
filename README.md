@@ -21,6 +21,8 @@ Streamlit 기반 금융 AI Challenge MVP입니다.
 - 현재 비중을 동일 비중·역변동성 비중과 비교
 - 비교 기준별 과거 누적수익률·변동성·최대 낙폭 표시
 - 비중과 산업 집중 차이에 관한 추가 검증 질문 생성
+- 선택적 OpenAI 연동을 통한 투자 논리 카테고리 분류
+- AI를 통한 데이터 부합·확인 불가 항목, 편향 가능성, 반대심문 질문 생성
 - 잘못된 ticker와 외부 API 오류 처리
 - 누락된 금융 데이터를 `None`으로 처리하는 일관된 데이터 구조
 
@@ -36,9 +38,7 @@ Streamlit 기반 금융 AI Challenge MVP입니다.
 
 ## 현재 구현하지 않은 기능
 
-- 실제 LLM API 연동
-- 투자 주장 자동 분류와 Fact Check
-- 편향 탐지와 반대 질문 생성
+- 외부 뉴스·공시까지 검색하는 Fact Check
 - 점수 산정
 - 매수·매도 및 종목 추천
 - 포트폴리오 최적화와 목표 비중 추천
@@ -59,7 +59,8 @@ investment-checker/
 │   └── financial_data.py
 ├── ai/
 │   ├── claim_extractor.py
-│   └── question_generator.py
+│   ├── question_generator.py
+│   └── portfolio_analyzer.py
 ├── logic/
 │   └── fact_check.py
 ├── tests/
@@ -90,19 +91,26 @@ http://localhost:8501
 
 ## 환경변수
 
-현재 POC는 yfinance만 사용하므로 API 키 없이 실행할 수 있습니다. 향후 FMP를
-연결할 때는 예시 파일을 복사한 뒤 키를 설정합니다.
+기본 포트폴리오 분석은 API 키 없이 실행할 수 있습니다. AI 논리 검증을
+활성화하려면 예시 파일을 복사한 뒤 OpenAI API 키를 설정합니다.
 
 ```bash
 cp .env.example .env
 ```
 
 ```text
-FMP_API_KEY=your_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-5.4-mini
+FMP_API_KEY=your_fmp_api_key_here
 ```
 
 `.env`는 Git에 올라가지 않도록 `.gitignore`에 포함되어 있습니다. API 키를
 코드나 README에 직접 작성하지 마세요.
+
+Streamlit Community Cloud에서는 앱 설정의 **Secrets**에 동일한 키를
+추가합니다. AI 체크박스를 켠 경우에만 입력한 논리와 화면에 표시된
+포트폴리오 데이터 요약이 OpenAI API로 전송됩니다. 이 앱은 그 결과를
+데이터베이스에 저장하지 않습니다.
 
 ## 테스트
 
