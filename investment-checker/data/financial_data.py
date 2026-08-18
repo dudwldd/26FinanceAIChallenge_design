@@ -103,6 +103,7 @@ def get_historical_prices(
             period=period,
             auto_adjust=True,
             progress=False,
+            timeout=15,
         )
     except Exception as exc:
         raise FinancialDataError(

@@ -5,7 +5,8 @@ import os
 from collections.abc import Callable
 from typing import Any, Literal
 
-from openai import OpenAI
+from openai import APIConnectionError, APITimeoutError, AuthenticationError, OpenAI
+from openai import RateLimitError
 from pydantic import BaseModel, Field
 
 
@@ -69,7 +70,7 @@ def analyze_portfolio_thesis(
     }
 
     try:
-        client = client_factory(api_key=resolved_key)
+        client = client_factory(api_key=resolved_key, timeout=30.0, max_retries=0)
         response = client.responses.parse(
             model=resolved_model,
             instructions=SYSTEM_INSTRUCTIONS,
@@ -77,6 +78,28 @@ def analyze_portfolio_thesis(
             text_format=PortfolioAIAnalysis,
         )
         parsed = response.output_parsed
+    except AuthenticationError as exc:
+        raise AIAnalysisError(
+            "OpenAI API 키가 유효하지 않습니다. API 키를 다시 확인해주세요."
+        ) from exc
+    except RateLimitError as exc:
+        error_code = getattr(exc, "code", None)
+        if error_code == "insufficient_quota":
+            raise AIAnalysisError(
+                "OpenAI API 잔액이 없거나 사용 한도에 도달했습니다. "
+                "OpenAI Platform의 Billing에서 크레딧과 사용 한도를 확인해주세요."
+            ) from exc
+        raise AIAnalysisError(
+            "OpenAI API 요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+        ) from exc
+    except APITimeoutError as exc:
+        raise AIAnalysisError(
+            "AI 분석이 30초 안에 완료되지 않았습니다. 다시 시도해주세요."
+        ) from exc
+    except APIConnectionError as exc:
+        raise AIAnalysisError(
+            "OpenAI API에 연결하지 못했습니다. 네트워크를 확인해주세요."
+        ) from exc
     except Exception as exc:
         raise AIAnalysisError(
             "AI 분석을 완료하지 못했습니다. 잠시 후 다시 시도해주세요."
@@ -85,4 +108,3 @@ def analyze_portfolio_thesis(
     if parsed is None:
         raise AIAnalysisError("AI가 분석 결과를 반환하지 않았습니다.")
     return parsed
-

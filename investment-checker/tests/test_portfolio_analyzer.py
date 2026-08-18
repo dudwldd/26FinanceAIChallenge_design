@@ -1,6 +1,7 @@
 """Tests for the optional OpenAI portfolio analysis layer."""
 
 import pytest
+from openai import RateLimitError
 
 from ai.portfolio_analyzer import (
     AIAnalysisError,
@@ -30,8 +31,12 @@ class FakeResponses:
 class FakeClient:
     """Small OpenAI client substitute used by unit tests."""
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(
+        self, api_key: str, timeout: float, max_retries: int
+    ) -> None:
         assert api_key == "test-key"
+        assert timeout == 30.0
+        assert max_retries == 0
         self.responses = FakeResponses()
 
 
@@ -65,4 +70,31 @@ def test_analyze_portfolio_thesis_wraps_client_errors() -> None:
     with pytest.raises(AIAnalysisError, match="AI 분석을 완료하지 못했습니다"):
         analyze_portfolio_thesis(
             "논리", {}, api_key="test-key", client_factory=failing_factory
+        )
+
+
+def test_analyze_portfolio_thesis_explains_missing_quota() -> None:
+    """An exhausted API balance should produce an actionable Korean message."""
+    def quota_factory(**kwargs: object) -> object:
+        class QuotaResponses:
+            def parse(self, **parse_kwargs: object) -> object:
+                response = type(
+                    "Response",
+                    (),
+                    {
+                        "status_code": 429,
+                        "headers": {},
+                        "request": None,
+                        "json": lambda self: {},
+                    },
+                )()
+                error = RateLimitError("quota", response=response, body=None)
+                error.code = "insufficient_quota"
+                raise error
+
+        return type("Client", (), {"responses": QuotaResponses()})()
+
+    with pytest.raises(AIAnalysisError, match="API 잔액"):
+        analyze_portfolio_thesis(
+            "논리", {}, api_key="test-key", client_factory=quota_factory
         )

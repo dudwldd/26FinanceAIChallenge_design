@@ -88,6 +88,18 @@ def get_openai_api_key() -> str | None:
 openai_api_key = get_openai_api_key()
 
 
+@st.cache_data(ttl=900, show_spinner=False)
+def get_cached_financial_data(ticker: str) -> dict[str, object]:
+    """Cache provider data briefly so reruns do not repeat the same request."""
+    return get_financial_data(ticker)
+
+
+@st.cache_data(ttl=900, show_spinner=False)
+def get_cached_historical_prices(tickers: tuple[str, ...]) -> pd.DataFrame:
+    """Cache price history briefly for faster repeated thesis checks."""
+    return get_historical_prices(list(tickers))
+
+
 st.set_page_config(page_title="Portfolio Thesis Checker")
 st.title("Portfolio Thesis Checker")
 st.caption("포트폴리오를 추천하지 않고, 입력한 구성과 투자 논리를 점검합니다.")
@@ -189,7 +201,9 @@ if submitted:
             try:
                 with st.spinner("종목별 금융 데이터를 불러오는 중입니다..."):
                     for holding in holdings:
-                        financial_data = get_financial_data(str(holding["ticker"]))
+                        financial_data = get_cached_financial_data(
+                            str(holding["ticker"])
+                        )
                         sector = financial_data["company_profile"]["sector"]
                         sectors[str(holding["ticker"])] = sector
                         financial_rows.append(
@@ -249,18 +263,18 @@ if submitted:
                     "해당 산업 비중",
                     f'{sector_concentration["dominant_weight"]:.2f}%',
                 )
-                sector_chart = pd.DataFrame(
+                sector_table = pd.DataFrame(
                     {
                         "산업": sector_concentration["sector_weights"].keys(),
                         "비중 (%)": sector_concentration["sector_weights"].values(),
                     }
-                ).set_index("산업")
-                st.bar_chart(sector_chart)
+                )
+                st.dataframe(sector_table, hide_index=True, width="stretch")
 
                 st.subheader("최근 1년 수익률 상관관계")
                 try:
-                    prices = get_historical_prices(
-                        [str(holding["ticker"]) for holding in holdings]
+                    prices = get_cached_historical_prices(
+                        tuple(str(holding["ticker"]) for holding in holdings)
                     )
                     correlation = calculate_return_correlation(prices)
                     average_correlation = calculate_average_correlation(correlation)
