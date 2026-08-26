@@ -37,6 +37,11 @@ and maximum drawdown under each weighting method, then generates deterministic
 questions about material differences. These are comparison references, not
 recommended or target allocations.
 
+Users may optionally attach one text-based PDF up to 10MB. The app extracts
+page-aware text in memory, shows a short preview, and includes the bounded text
+in the optional AI analysis. The PDF is not stored in a database. Image-only
+scans and encrypted PDFs are not supported in this MVP.
+
 ## Installation
 
 Python 3.10 or newer is recommended.

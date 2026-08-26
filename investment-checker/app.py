@@ -12,6 +12,7 @@ from data.financial_data import (
     get_financial_data,
     get_historical_prices,
 )
+from data.pdf_evidence import PDFEvidenceError, extract_pdf_evidence
 from logic.portfolio import (
     PortfolioValidationError,
     calculate_average_correlation,
@@ -134,6 +135,19 @@ with st.form("thesis_form"):
         help="이 종목들과 비중을 선택한 이유를 자유롭게 적어주세요.",
     )
 
+    evidence_pdf = st.file_uploader(
+        "판단에 참고한 PDF (선택)",
+        type=["pdf"],
+        accept_multiple_files=False,
+        help=(
+            "10MB 이하의 PDF 1개를 첨부할 수 있습니다. "
+            "파일은 DB에 저장하지 않으며, AI 분석을 선택한 경우에만 "
+            "추출된 텍스트가 OpenAI API로 전송됩니다."
+        ),
+    )
+    if evidence_pdf is not None:
+        st.caption(f"첨부된 자료: {evidence_pdf.name}")
+
     st.subheader("판단 근거 점검")
     thesis_factors = st.multiselect(
         "1. 이 판단에서 중요하게 본 근거는 무엇인가요? (복수 선택 가능)",
@@ -175,8 +189,20 @@ with st.form("thesis_form"):
 
     submitted = st.form_submit_button("Check my thesis")
 
+pdf_evidence = None
+pdf_error = None
+if submitted and evidence_pdf is not None:
+    try:
+        pdf_evidence = extract_pdf_evidence(
+            evidence_pdf.getvalue(), evidence_pdf.name
+        )
+    except PDFEvidenceError as exc:
+        pdf_error = str(exc)
+
 if submitted:
-    if not thesis.strip():
+    if pdf_error:
+        st.error(pdf_error)
+    elif not thesis.strip():
         st.error("포트폴리오 구성 논리를 입력해주세요.")
     elif not all(
         [
@@ -229,6 +255,25 @@ if submitted:
             if data_error:
                 st.error(data_error)
             else:
+                if pdf_evidence is not None:
+                    st.subheader("첨부 근거자료")
+                    pdf_col1, pdf_col2 = st.columns(2)
+                    pdf_col1.metric("파일", str(pdf_evidence["filename"]))
+                    pdf_col2.metric("페이지", f'{pdf_evidence["page_count"]}쪽')
+                    if pdf_evidence["was_truncated"]:
+                        st.warning(
+                            "문서가 길어 처음 30페이지와 최대 30,000자까지만 "
+                            "분석에 사용합니다."
+                        )
+                    with st.expander("추출된 PDF 텍스트 미리보기"):
+                        for page in pdf_evidence["pages"][:3]:
+                            st.markdown(f'**{page["page"]}페이지**')
+                            page_text = str(page["text"])
+                            st.text(page_text[:2_000])
+                        st.caption(
+                            "미리보기는 최대 3페이지, 페이지당 2,000자만 표시합니다."
+                        )
+
                 concentration = calculate_concentration(holdings)
                 sector_concentration = calculate_sector_concentration(
                     holdings, sectors
@@ -348,6 +393,7 @@ if submitted:
                                     "investment_horizon": investment_horizon,
                                     "loss_response": loss_response,
                                 },
+                                "uploaded_evidence": pdf_evidence,
                             }
                             try:
                                 with st.spinner("AI가 투자 논리를 검증하는 중입니다..."):
@@ -364,6 +410,17 @@ if submitted:
                                 st.write(
                                     "분류: " + ", ".join(ai_analysis.categories)
                                 )
+
+                                if pdf_evidence is not None:
+                                    st.markdown("#### 첨부자료에서 확인한 내용")
+                                    if ai_analysis.evidence_findings:
+                                        for finding in ai_analysis.evidence_findings:
+                                            st.write(f"- {finding}")
+                                    else:
+                                        st.write(
+                                            "- 첨부자료에서 투자 논리와 직접 "
+                                            "연결되는 근거를 확인하기 어렵습니다."
+                                        )
 
                                 st.markdown("#### 데이터와 부합하는 부분")
                                 if ai_analysis.supported_points:
