@@ -24,6 +24,7 @@ from logic.portfolio import (
     generate_portfolio_questions,
     validate_portfolio,
 )
+from logic.thesis_standards import evaluate_thesis_standards
 
 
 THESIS_FACTORS = [
@@ -338,6 +339,29 @@ if submitted:
                         "예측하거나 분산 효과를 단정하는 지표는 아닙니다."
                     )
 
+                    standard_findings = evaluate_thesis_standards(
+                        holding_count=len(holdings),
+                        dominant_sector_weight=float(
+                            sector_concentration["dominant_weight"]
+                        ),
+                        average_correlation=average_correlation,
+                        thesis_factors=thesis_factors,
+                        investment_horizon=investment_horizon,
+                        evidence_level=evidence_level,
+                    )
+                    st.subheader("팀 기준 진단")
+                    if standard_findings:
+                        for finding in standard_findings:
+                            with st.expander(str(finding["rule"]), expanded=True):
+                                st.write(str(finding["diagnosis"]))
+                                st.caption("판정 근거: " + ", ".join(finding["evidence"]))
+                                st.markdown(f'**후속 질문:** {finding["question"]}')
+                    else:
+                        st.success(
+                            "현재 입력에서는 팀이 정한 3가지 규칙에 해당하는 "
+                            "항목이 확인되지 않았습니다."
+                        )
+
                     st.subheader("비중 비교를 통한 논리 점검")
                     try:
                         comparison_weights = build_comparison_weights(
@@ -394,6 +418,7 @@ if submitted:
                                     "loss_response": loss_response,
                                 },
                                 "uploaded_evidence": pdf_evidence,
+                                "team_standard_findings": standard_findings,
                             }
                             try:
                                 with st.spinner("AI가 투자 논리를 검증하는 중입니다..."):
