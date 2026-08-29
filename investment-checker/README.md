@@ -42,6 +42,19 @@ page-aware text in memory, shows a short preview, and includes the bounded text
 in the optional AI analysis. The PDF is not stored in a database. Image-only
 scans and encrypted PDFs are not supported in this MVP.
 
+The app also applies three deterministic team review standards: diversification
+illusion (sector weight of at least 70% or average correlation of at least
+0.70), mismatch between long-term reasoning and a horizon below one year, and
+quantitative claims made with a low level of supporting research. Each triggered
+standard shows its measured basis, a neutral diagnosis, and a follow-up question.
+
+The review flow has two stages. The first stage identifies issues and selects up
+to three cross-examination questions. The user answers those questions in a
+second form before seeing the final review. Without an OpenAI API key, the app
+records the completed answers without claiming to understand their meaning. If
+optional AI analysis is enabled, the final step compares the original thesis and
+follow-up answers for support, unresolved assumptions, and rationale changes.
+
 ## Installation
 
 Python 3.10 or newer is recommended.

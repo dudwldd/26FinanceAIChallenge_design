@@ -16,6 +16,7 @@ class FakeResponses:
     def parse(self, **kwargs: object) -> object:
         assert kwargs["model"] == "test-model"
         assert "Never recommend" in str(kwargs["instructions"])
+        assert kwargs["store"] is False
         parsed = PortfolioAIAnalysis(
             categories=["risk"],
             summary="입력 논리의 일부가 데이터와 부합합니다.",
