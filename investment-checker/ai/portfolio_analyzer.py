@@ -59,6 +59,10 @@ company revenue/profit and current valuation, stated a falsifiable business
 assumption, relied on one event, used exceptionalist claims such as '이번엔
 다르다', or showed urgency/FOMO. Do not claim a pattern when the required input
 or follow-up response is absent; instead ask a verification question.
+When cross_examination_answers are supplied, compare each answer with the
+original thesis. Clearly distinguish a genuinely strengthened thesis, an
+unresolved assumption, and a changed rationale (moving target). Do not treat a
+long or confident answer as sufficient evidence by itself.
 """.strip()
 
 
@@ -88,6 +92,7 @@ def analyze_portfolio_thesis(
             instructions=SYSTEM_INSTRUCTIONS,
             input=json.dumps(payload, ensure_ascii=False, default=str),
             text_format=PortfolioAIAnalysis,
+            store=False,
         )
         parsed = response.output_parsed
     except AuthenticationError as exc:

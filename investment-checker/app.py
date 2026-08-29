@@ -24,6 +24,11 @@ from logic.portfolio import (
     generate_portfolio_questions,
     validate_portfolio,
 )
+from logic.cross_examination import (
+    CrossExaminationError,
+    select_cross_examination_questions,
+    validate_cross_examination_answers,
+)
 from logic.thesis_standards import evaluate_thesis_standards
 
 
@@ -177,12 +182,12 @@ with st.form("thesis_form"):
     )
 
     use_ai_analysis = st.checkbox(
-        "AI로 투자 논리와 데이터의 부합 여부를 추가 분석합니다.",
+        "반대심문 답변 후 AI로 최종 논리 일관성을 분석합니다.",
         value=False,
         disabled=not bool(openai_api_key),
         help=(
-            "선택하면 입력한 투자 논리와 화면에 표시된 금융 데이터 요약이 "
-            "OpenAI API로 전송됩니다. 매수·매도 추천은 생성하지 않습니다."
+            "선택하면 최초 투자 논리, 금융 데이터 요약, 반대심문 답변이 "
+            "최종 단계에서 OpenAI API로 전송됩니다. 매수·매도 추천은 생성하지 않습니다."
         ),
     )
     if not openai_api_key:
@@ -398,83 +403,48 @@ if submitted:
                             float(sector_concentration["dominant_weight"]),
                             average_correlation,
                         )
-                        st.markdown("#### 추가로 점검할 질문")
-                        for question in questions:
+                        cross_examination_questions = (
+                            select_cross_examination_questions(
+                                standard_findings, questions
+                            )
+                        )
+                        st.markdown("#### 1차 분석에서 확인된 쟁점")
+                        st.write(
+                            "아래 질문에 답하면 최초 투자 논리의 보완 여부와 "
+                            "일관성을 최종 점검합니다."
+                        )
+                        for question in cross_examination_questions:
                             st.write(f"- {question}")
 
-                        if use_ai_analysis:
-                            ai_context = {
-                                "holdings": holdings,
-                                "financial_data": financial_rows,
-                                "sector_concentration": sector_concentration,
-                                "average_correlation": average_correlation,
-                                "comparison_weights_percent": weight_table.to_dict(),
-                                "historical_metrics": historical_metrics.to_dict(),
-                                "questionnaire": {
-                                    "thesis_factors": thesis_factors,
-                                    "decision_trigger": decision_trigger,
-                                    "evidence_level": evidence_level,
-                                    "investment_horizon": investment_horizon,
-                                    "loss_response": loss_response,
-                                },
-                                "uploaded_evidence": pdf_evidence,
-                                "team_standard_findings": standard_findings,
-                            }
-                            try:
-                                with st.spinner("AI가 투자 논리를 검증하는 중입니다..."):
-                                    ai_analysis = analyze_portfolio_thesis(
-                                        thesis.strip(),
-                                        ai_context,
-                                        api_key=openai_api_key,
-                                    )
-                            except AIAnalysisError as exc:
-                                st.warning(str(exc))
-                            else:
-                                st.subheader("AI 투자 논리 검증")
-                                st.write(ai_analysis.summary)
-                                st.write(
-                                    "분류: " + ", ".join(ai_analysis.categories)
-                                )
-
-                                if pdf_evidence is not None:
-                                    st.markdown("#### 첨부자료에서 확인한 내용")
-                                    if ai_analysis.evidence_findings:
-                                        for finding in ai_analysis.evidence_findings:
-                                            st.write(f"- {finding}")
-                                    else:
-                                        st.write(
-                                            "- 첨부자료에서 투자 논리와 직접 "
-                                            "연결되는 근거를 확인하기 어렵습니다."
-                                        )
-
-                                st.markdown("#### 데이터와 부합하는 부분")
-                                if ai_analysis.supported_points:
-                                    for point in ai_analysis.supported_points:
-                                        st.write(f"- {point}")
-                                else:
-                                    st.write("- 현재 데이터만으로 확인된 부분이 없습니다.")
-
-                                st.markdown("#### 확인되지 않거나 보완이 필요한 부분")
-                                if ai_analysis.uncertain_points:
-                                    for point in ai_analysis.uncertain_points:
-                                        st.write(f"- {point}")
-                                else:
-                                    st.write("- 별도로 식별된 항목이 없습니다.")
-
-                                st.markdown("#### 편향 가능성")
-                                if ai_analysis.possible_biases:
-                                    for bias in ai_analysis.possible_biases:
-                                        st.write(f"- {bias}")
-                                else:
-                                    st.write("- 현재 입력에서 뚜렷한 편향을 확인하기 어렵습니다.")
-
-                                st.markdown("#### AI 반대심문 질문")
-                                for question in ai_analysis.devils_advocate_questions:
-                                    st.write(f"- {question}")
-
-                                with st.expander("AI 분석의 데이터 한계"):
-                                    for limitation in ai_analysis.data_limitations:
-                                        st.write(f"- {limitation}")
+                        ai_context = {
+                            "holdings": holdings,
+                            "financial_data": financial_rows,
+                            "sector_concentration": sector_concentration,
+                            "average_correlation": average_correlation,
+                            "comparison_weights_percent": weight_table.to_dict(),
+                            "historical_metrics": historical_metrics.to_dict(),
+                            "questionnaire": {
+                                "thesis_factors": thesis_factors,
+                                "decision_trigger": decision_trigger,
+                                "evidence_level": evidence_level,
+                                "investment_horizon": investment_horizon,
+                                "loss_response": loss_response,
+                            },
+                            "uploaded_evidence": pdf_evidence,
+                            "team_standard_findings": standard_findings,
+                        }
+                        st.session_state["cross_examination"] = {
+                            "original_thesis": thesis.strip(),
+                            "questions": cross_examination_questions,
+                            "analysis_context": ai_context,
+                            "use_ai_analysis": use_ai_analysis,
+                            "has_pdf": pdf_evidence is not None,
+                        }
+                        st.session_state.pop("final_cross_examination", None)
+                        for index in range(3):
+                            st.session_state.pop(
+                                f"cross_examination_answer_{index}", None
+                            )
 
                 with st.expander("입력한 투자 논리와 응답 보기"):
                     st.write(f"포트폴리오 구성 논리: {thesis.strip()}")
@@ -488,3 +458,109 @@ if submitted:
                     "비교 비중은 사용자의 투자 논리를 점검하기 위한 참고 기준입니다. "
                     "이 서비스는 포트폴리오 추천이나 목표 비중을 제공하지 않습니다."
                 )
+
+
+cross_examination = st.session_state.get("cross_examination")
+if cross_examination:
+    st.divider()
+    st.header("2단계: 반대심문 답변")
+    st.write(
+        "1차 분석에서 발견된 쟁점에 답해주세요. 답변은 새로운 추천을 받기 위한 "
+        "것이 아니라, 최초 논리를 보완하거나 수정할 수 있는지 확인하는 데 사용됩니다."
+    )
+
+    with st.form("cross_examination_form"):
+        follow_up_answers = [
+            st.text_area(
+                f"질문 {index + 1}. {question}",
+                key=f"cross_examination_answer_{index}",
+            )
+            for index, question in enumerate(cross_examination["questions"])
+        ]
+        final_submitted = st.form_submit_button("최종 진단 보기")
+
+    if final_submitted:
+        try:
+            answer_records = validate_cross_examination_answers(
+                cross_examination["questions"], follow_up_answers
+            )
+        except CrossExaminationError as exc:
+            st.error(str(exc))
+        else:
+            final_result: dict[str, object] = {"answers": answer_records}
+            if cross_examination["use_ai_analysis"]:
+                final_context = dict(cross_examination["analysis_context"])
+                final_context["cross_examination_answers"] = answer_records
+                combined_thesis = (
+                    f'최초 투자 논리:\n{cross_examination["original_thesis"]}\n\n'
+                    "반대심문 질문과 사용자 답변:\n"
+                    + "\n".join(
+                        f'Q: {record["question"]}\nA: {record["answer"]}'
+                        for record in answer_records
+                    )
+                )
+                try:
+                    with st.spinner("AI가 최초 논리와 추가 답변을 함께 검증하는 중입니다..."):
+                        final_result["ai_analysis"] = analyze_portfolio_thesis(
+                            combined_thesis,
+                            final_context,
+                            api_key=openai_api_key,
+                        )
+                except AIAnalysisError as exc:
+                    final_result["ai_error"] = str(exc)
+            st.session_state["final_cross_examination"] = final_result
+
+    final_cross_examination = st.session_state.get("final_cross_examination")
+    if final_cross_examination:
+        st.header("최종 진단")
+        st.success("반대심문 답변이 모두 제출되었습니다.")
+
+        st.markdown("#### 질문별 보완 답변")
+        for record in final_cross_examination["answers"]:
+            with st.expander(str(record["question"]), expanded=True):
+                st.write(str(record["answer"]))
+
+        ai_error = final_cross_examination.get("ai_error")
+        ai_analysis = final_cross_examination.get("ai_analysis")
+        if ai_error:
+            st.warning(str(ai_error))
+        elif ai_analysis:
+            st.markdown("#### 최초 논리와 추가 답변의 종합 분석")
+            st.write(ai_analysis.summary)
+            st.write("분류: " + ", ".join(ai_analysis.categories))
+
+            st.markdown("#### 데이터와 부합하거나 보완된 부분")
+            for point in ai_analysis.supported_points:
+                st.write(f"- {point}")
+
+            st.markdown("#### 여전히 확인이 필요한 부분")
+            for point in ai_analysis.uncertain_points:
+                st.write(f"- {point}")
+
+            st.markdown("#### 편향 또는 논리 이동 가능성")
+            if ai_analysis.possible_biases:
+                for bias in ai_analysis.possible_biases:
+                    st.write(f"- {bias}")
+            else:
+                st.write("- 현재 답변에서 뚜렷한 편향을 확인하기 어렵습니다.")
+
+            st.markdown("#### 남은 확인 질문")
+            for question in ai_analysis.devils_advocate_questions:
+                st.write(f"- {question}")
+
+            with st.expander("최종 분석의 데이터 한계"):
+                for limitation in ai_analysis.data_limitations:
+                    st.write(f"- {limitation}")
+        else:
+            st.info(
+                "현재는 답변 제출과 기록까지 완료되었습니다. 답변의 의미, 최초 "
+                "논리와의 일관성, 논리 이동 여부를 자동 해석하려면 AI 분석을 "
+                "활성화해야 합니다."
+            )
+
+    if st.button("새 분석 시작"):
+        st.session_state.pop("cross_examination", None)
+        st.session_state.pop("final_cross_examination", None)
+        for index in range(3):
+            st.session_state.pop(f"cross_examination_answer_{index}", None)
+        st.rerun()
