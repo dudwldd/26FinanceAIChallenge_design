@@ -3,6 +3,7 @@
 import time
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 
 STEPS = [
@@ -11,6 +12,32 @@ STEPS = [
     ("followup", "추가 질문"),
     ("result", "진단 결과"),
 ]
+
+
+def scroll_to_top_on_screen_change(screen: str) -> None:
+    """Reset the main viewport only when the workflow advances to another screen."""
+    previous_screen = st.session_state.get("_last_workflow_screen")
+    if previous_screen == screen:
+        return
+    st.session_state["_last_workflow_screen"] = screen
+    components.html(
+        """
+        <script>
+        const scrollMainToTop = () => {
+            const doc = window.parent.document;
+            const main = doc.querySelector('[data-testid="stMain"]');
+            const view = doc.querySelector('[data-testid="stAppViewContainer"]');
+            if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            if (view) view.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            window.parent.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        };
+        scrollMainToTop();
+        window.setTimeout(scrollMainToTop, 80);
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
 
 
 def render_step_navigation(active_step: str) -> None:

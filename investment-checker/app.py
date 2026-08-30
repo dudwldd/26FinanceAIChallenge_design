@@ -32,7 +32,11 @@ from logic.cross_examination import (
 from logic.thesis_standards import evaluate_thesis_standards
 from ui.login import render_login
 from ui.styles import apply_global_styles
-from ui.workflow import render_question_loading, render_step_navigation
+from ui.workflow import (
+    render_question_loading,
+    render_step_navigation,
+    scroll_to_top_on_screen_change,
+)
 
 
 THESIS_FACTORS = [
@@ -129,6 +133,7 @@ if "workflow_screen" not in st.session_state:
     st.session_state["workflow_screen"] = "portfolio"
 
 workflow_screen = st.session_state["workflow_screen"]
+scroll_to_top_on_screen_change(workflow_screen)
 
 if workflow_screen == "portfolio":
     render_step_navigation("portfolio")
