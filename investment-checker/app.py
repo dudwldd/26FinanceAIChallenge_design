@@ -120,6 +120,8 @@ apply_global_styles()
 if not render_login():
     st.stop()
 
+st.markdown('<div class="app-shell-marker"></div>', unsafe_allow_html=True)
+
 if "workflow_screen" not in st.session_state:
     st.session_state["workflow_screen"] = "portfolio"
 
@@ -287,7 +289,7 @@ if workflow_screen == "criteria":
         factor_detail = st.text_area(
             "선택 근거 상세 설명",
             placeholder="최근 3년간 매출과 영업이익이 꾸준히 증가했고, AI 관련 수요 확대가 계속될 것으로 판단했습니다.",
-            height=120,
+            height=180,
             key="criteria_factor_detail",
             label_visibility="collapsed",
         )
@@ -326,18 +328,6 @@ if workflow_screen == "criteria":
             <div class="evidence-panel-heading">
                 <strong>참고한 자료 첨부</strong>
                 <p>투자 판단에 참고한 자료가 있다면 첨부해주세요. 텍스트 기반 PDF 파일 1개를 업로드할 수 있습니다.</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            """
-            <div class="upload-copy">
-                <span>▱</span>
-                <strong>PDF 파일 업로드</strong>
-                <p>최대 10MB · 텍스트 기반 PDF만 지원<br>
-                스캔·암호화·이미지 전용 PDF는 지원하지 않습니다.</p>
-                <small>업로드된 파일은 현재 분석에만 사용되며 저장되지 않습니다.</small>
             </div>
             """,
             unsafe_allow_html=True,
@@ -408,7 +398,7 @@ if workflow_screen == "criteria":
     use_ai_analysis = st.checkbox(
         "반대심문 답변 후 AI로 최종 논리 일관성을 분석합니다.",
         value=False,
-        disabled=not bool(openai_api_key),
+        disabled=False,
         key="criteria_use_ai",
         help=(
             "선택하면 최초 투자 논리, 금융 데이터 요약, 반대심문 답변이 "
@@ -416,7 +406,7 @@ if workflow_screen == "criteria":
         ),
     )
     if not openai_api_key:
-        st.caption("AI 분석을 사용하려면 OPENAI_API_KEY를 설정해주세요.")
+        st.caption("API 키가 없으면 AI 최종 분석 단계에서 안내 메시지가 표시됩니다.")
 
     _, criteria_button_column = st.columns([2.2, 1])
     criteria_submitted = criteria_button_column.button(

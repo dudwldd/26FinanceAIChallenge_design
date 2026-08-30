@@ -49,6 +49,13 @@ def apply_global_styles() -> None:
             padding-right: 2.75rem;
         }
 
+        [data-testid="stMainBlockContainer"]:has(.app-shell-marker) {
+            max-width: 1020px !important;
+            padding-top: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
         h1, h2, h3 {
             color: var(--court-ink);
             letter-spacing: -0.035em;
@@ -399,6 +406,12 @@ def apply_global_styles() -> None:
             margin-bottom: 0.9rem;
         }
 
+        div[data-testid="stButtonGroup"] [role="toolbar"] {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 0.9rem;
+        }
+
         div[data-testid="stButtonGroup"] button {
             min-height: 46px;
             padding: 0.65rem 1.25rem;
@@ -515,53 +528,54 @@ def apply_global_styles() -> None:
             font-size: 0.86rem;
         }
 
-        .upload-copy {
-            margin-bottom: 0.8rem;
-            padding: 1.4rem 1rem 0.4rem;
-            color: #8fa0b7;
-            text-align: center;
-        }
-
-        .upload-copy > span {
-            display: grid;
-            width: 52px;
-            height: 52px;
-            margin: 0 auto 0.65rem;
-            place-items: center;
-            border: 1px solid #d9e2ed;
-            border-radius: 14px;
-            color: #8fa3bd;
-            font-size: 1.5rem;
-        }
-
-        .upload-copy strong {
-            display: block;
-            color: #273449;
-            font-size: 0.98rem;
-            font-weight: 600;
-        }
-
-        .upload-copy p {
-            margin: 0.25rem 0 0.9rem;
-            font-size: 0.82rem;
-            line-height: 1.55;
-        }
-
-        .upload-copy small {
-            display: inline-block;
-            padding: 0.45rem 0.8rem;
-            border: 1px solid #dce4ef;
-            border-radius: 999px;
-            background: #ffffff;
-            font-size: 0.76rem;
-        }
-
         div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
         [data-testid="stFileUploaderDropzone"] {
-            min-height: 210px;
+            position: relative;
+            min-height: 260px;
             border: 1px dashed #d7e0ec;
             border-radius: 16px;
             background: #ffffff;
+            cursor: pointer;
+        }
+
+        div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
+        [data-testid="stFileUploaderDropzone"]::before {
+            content: "▱\\A PDF 파일 업로드\\A 최대 10MB · 텍스트 기반 PDF만 지원\\A 스캔·암호화·이미지 전용 PDF는 지원하지 않습니다.\\A\\A 업로드된 파일은 현재 분석에만 사용되며 저장되지 않습니다.";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: #8fa0b7;
+            font-family: "Noto Sans KR", sans-serif;
+            font-size: 0.84rem;
+            font-weight: 500;
+            line-height: 1.75;
+            text-align: center;
+            white-space: pre-line;
+            pointer-events: none;
+        }
+
+        div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
+        [data-testid="stFileUploaderDropzone"] > div {
+            opacity: 0;
+        }
+
+        div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
+        [data-testid="stFileUploaderDropzone"] button {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
+        div[data-baseweb="input"] > div {
+            background: #ffffff !important;
         }
 
         div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
@@ -782,6 +796,10 @@ def apply_global_styles() -> None:
 
             [data-testid="stMainBlockContainer"]:has(.login-shell) {
                 padding: 2rem 1rem 4rem;
+            }
+
+            [data-testid="stMainBlockContainer"]:has(.app-shell-marker) {
+                padding: 0 1rem 4rem !important;
             }
 
             [data-testid="stForm"] {
