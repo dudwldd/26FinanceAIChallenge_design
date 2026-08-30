@@ -1,0 +1,155 @@
+"""Global visual system for the Portfolio Thesis Checker."""
+
+import streamlit as st
+
+
+def apply_global_styles() -> None:
+    """Apply the Figma-inspired visual tokens to Streamlit widgets."""
+    st.markdown(
+        """
+        <style>
+        :root {
+            --court-ink: #202124;
+            --court-muted: #72767f;
+            --court-line: #e7e8eb;
+            --court-soft: #f7f8fa;
+            --court-coral: #ef5447;
+            --court-coral-hover: #dc463b;
+            --court-mint: #20b989;
+            --court-warning: #e8a600;
+            --court-radius: 12px;
+        }
+
+        .stApp {
+            background: #ffffff;
+            color: var(--court-ink);
+        }
+
+        [data-testid="stHeader"] {
+            background: rgba(255, 255, 255, 0.92);
+            border-bottom: 1px solid var(--court-line);
+        }
+
+        [data-testid="stMainBlockContainer"] {
+            max-width: 940px;
+            padding-top: 3.5rem;
+            padding-bottom: 6rem;
+        }
+
+        h1, h2, h3 {
+            color: var(--court-ink);
+            letter-spacing: -0.035em;
+        }
+
+        h1 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(2.25rem, 5vw, 3.45rem) !important;
+            line-height: 1.08 !important;
+            font-weight: 500 !important;
+            margin-bottom: 0.55rem !important;
+        }
+
+        h2 {
+            font-size: 1.35rem !important;
+            font-weight: 650 !important;
+            margin-top: 2rem !important;
+        }
+
+        p, label, [data-testid="stCaptionContainer"] {
+            line-height: 1.65;
+        }
+
+        [data-testid="stCaptionContainer"] {
+            color: var(--court-muted);
+        }
+
+        [data-testid="stForm"],
+        [data-testid="stExpander"],
+        [data-testid="stDataFrame"],
+        div[data-testid="stMetric"] {
+            border: 1px solid var(--court-line);
+            border-radius: var(--court-radius);
+            background: #ffffff;
+            box-shadow: 0 8px 30px rgba(25, 31, 42, 0.035);
+        }
+
+        [data-testid="stForm"] {
+            padding: 1.35rem 1.4rem 1.5rem;
+        }
+
+        div[data-baseweb="input"] > div,
+        div[data-baseweb="textarea"] > div,
+        div[data-baseweb="select"] > div {
+            border-color: var(--court-line) !important;
+            border-radius: 9px !important;
+            background: var(--court-soft) !important;
+        }
+
+        div[data-baseweb="input"] > div:focus-within,
+        div[data-baseweb="textarea"] > div:focus-within,
+        div[data-baseweb="select"] > div:focus-within {
+            border-color: var(--court-coral) !important;
+            box-shadow: 0 0 0 1px var(--court-coral) !important;
+        }
+
+        .stButton > button,
+        .stFormSubmitButton > button,
+        .stDownloadButton > button {
+            min-height: 2.85rem;
+            border-radius: 9px;
+            border: 1px solid var(--court-line);
+            font-weight: 650;
+            transition: border-color 150ms ease, color 150ms ease,
+                background 150ms ease, transform 150ms ease;
+        }
+
+        .stButton > button:hover,
+        .stDownloadButton > button:hover {
+            color: var(--court-coral);
+            border-color: var(--court-coral);
+            transform: translateY(-1px);
+        }
+
+        .stFormSubmitButton > button {
+            color: #ffffff;
+            background: var(--court-coral);
+            border-color: var(--court-coral);
+        }
+
+        .stFormSubmitButton > button:hover {
+            color: #ffffff;
+            background: var(--court-coral-hover);
+            border-color: var(--court-coral-hover);
+        }
+
+        [data-testid="stFileUploaderDropzone"] {
+            border: 1px dashed #cfd2d8;
+            border-radius: var(--court-radius);
+            background: var(--court-soft);
+        }
+
+        div[data-testid="stMetric"] {
+            padding: 1rem 1.1rem;
+        }
+
+        [data-testid="stAlert"] {
+            border-radius: var(--court-radius);
+        }
+
+        hr {
+            border-color: var(--court-line) !important;
+        }
+
+        @media (max-width: 720px) {
+            [data-testid="stMainBlockContainer"] {
+                padding: 2rem 1rem 4rem;
+            }
+
+            [data-testid="stForm"] {
+                padding: 1rem;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )

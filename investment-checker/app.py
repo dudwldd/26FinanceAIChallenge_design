@@ -30,6 +30,7 @@ from logic.cross_examination import (
     validate_cross_examination_answers,
 )
 from logic.thesis_standards import evaluate_thesis_standards
+from ui.styles import apply_global_styles
 
 
 THESIS_FACTORS = [
@@ -107,7 +108,12 @@ def get_cached_historical_prices(tickers: tuple[str, ...]) -> pd.DataFrame:
     return get_historical_prices(list(tickers))
 
 
-st.set_page_config(page_title="Portfolio Thesis Checker")
+st.set_page_config(
+    page_title="Portfolio Thesis Checker",
+    page_icon="⚖️",
+    layout="centered",
+)
+apply_global_styles()
 st.title("Portfolio Thesis Checker")
 st.caption("포트폴리오를 추천하지 않고, 입력한 구성과 투자 논리를 점검합니다.")
 
