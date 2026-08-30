@@ -25,16 +25,33 @@ def scroll_to_top_on_screen_change(screen: str) -> None:
         <script>
         const scrollMainToTop = () => {
             const doc = window.parent.document;
-            const main = doc.querySelector('[data-testid="stMain"]');
-            const view = doc.querySelector('[data-testid="stAppViewContainer"]');
-            if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-            if (view) view.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-            window.parent.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            const selectors = [
+                '[data-testid="stMain"]',
+                '[data-testid="stAppViewContainer"]',
+                'section.main',
+                '.stApp'
+            ];
+            selectors.forEach((selector) => {
+                const element = doc.querySelector(selector);
+                if (element) {
+                    element.scrollTop = 0;
+                    element.scrollLeft = 0;
+                    element.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+                }
+            });
+            doc.documentElement.scrollTop = 0;
+            doc.body.scrollTop = 0;
+            window.parent.scrollTo(0, 0);
+
+            const top = doc.querySelector('[data-testid="stMainBlockContainer"]');
+            if (top) top.scrollIntoView({ block: 'start', behavior: 'auto' });
         };
         scrollMainToTop();
-        window.setTimeout(scrollMainToTop, 80);
-        window.setTimeout(scrollMainToTop, 250);
-        window.setTimeout(scrollMainToTop, 500);
+        const scrollReset = window.setInterval(scrollMainToTop, 50);
+        window.setTimeout(() => {
+            scrollMainToTop();
+            window.clearInterval(scrollReset);
+        }, 1600);
 
         const shield = window.parent.document.getElementById('workflow-transition-shield');
         if (shield && %REMOVE_SHIELD%) {
