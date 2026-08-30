@@ -50,7 +50,7 @@ def apply_global_styles() -> None:
         }
 
         [data-testid="stMainBlockContainer"]:has(.app-shell-marker) {
-            max-width: 1150px !important;
+            max-width: 880px !important;
             padding-top: 0 !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
@@ -281,7 +281,7 @@ def apply_global_styles() -> None:
             width: 100vw;
             height: 70px;
             margin: 0 0 5rem -50vw;
-            padding: 0 max(1.5rem, calc((100vw - 1150px) / 2));
+            padding: 0 max(1.5rem, calc((100vw - 880px) / 2));
             box-sizing: border-box;
             border-bottom: 1px solid var(--court-line);
             background: rgba(255, 255, 255, 0.98);
