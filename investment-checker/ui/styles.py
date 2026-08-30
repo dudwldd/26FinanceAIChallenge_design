@@ -366,7 +366,7 @@ def apply_global_styles() -> None:
             padding: 0 !important;
             color: #111827;
             font-family: "Noto Serif KR", "Batang", serif !important;
-            font-size: clamp(2.45rem, 4vw, 3rem) !important;
+            font-size: clamp(2.15rem, 3.4vw, 2.6rem) !important;
             font-weight: 500 !important;
             line-height: 1.25 !important;
             letter-spacing: -0.055em;
