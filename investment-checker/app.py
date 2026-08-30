@@ -120,7 +120,10 @@ apply_global_styles()
 if not render_login():
     st.stop()
 
-st.markdown('<div class="app-shell-marker"></div>', unsafe_allow_html=True)
+st.markdown(
+    '<span class="app-shell-marker" aria-hidden="true">&nbsp;</span>',
+    unsafe_allow_html=True,
+)
 
 if "workflow_screen" not in st.session_state:
     st.session_state["workflow_screen"] = "portfolio"
