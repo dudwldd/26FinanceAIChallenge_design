@@ -391,6 +391,86 @@ def apply_global_styles() -> None:
             background: #646cff;
         }
 
+        div[data-testid="stVerticalBlockBorderWrapper"] {
+            margin-bottom: 1.4rem;
+            padding: 2rem 2.45rem 2.2rem;
+            border: 1px solid #dbe3ee;
+            border-radius: 22px;
+            background: #ffffff;
+            box-shadow: 0 3px 12px rgba(43, 59, 82, 0.035);
+        }
+
+        .portfolio-card-title {
+            margin: 0 0 1.9rem !important;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.65rem !important;
+            font-weight: 500 !important;
+        }
+
+        .portfolio-card-title.thesis {
+            margin-bottom: 0.45rem !important;
+        }
+
+        .portfolio-card-copy {
+            margin: 0 0 1.25rem;
+            color: #8ea0b9;
+        }
+
+        .portfolio-column-label {
+            padding: 0 0.3rem 0.75rem;
+            border-bottom: 1px solid #dce4ef;
+            color: #93a3ba;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+        }
+
+        .portfolio-column-label.right {
+            text-align: right;
+        }
+
+        .portfolio-total {
+            padding-top: 0.65rem;
+            color: #94a3b8;
+            text-align: right;
+        }
+
+        .portfolio-total strong {
+            margin-left: 0.35rem;
+            font-size: 1.18rem;
+            font-style: italic;
+        }
+
+        .portfolio-total.valid strong {
+            color: #10b981;
+        }
+
+        .portfolio-total.invalid strong {
+            color: var(--court-coral);
+        }
+
+        .portfolio-rule {
+            height: 1px;
+            margin: 1rem 0 0.95rem;
+            background: #dce4ef;
+        }
+
+        button[kind="primary"] {
+            color: #ffffff !important;
+            border-color: var(--court-coral) !important;
+            background: var(--court-coral) !important;
+        }
+
+        button[kind="primary"]:hover {
+            border-color: var(--court-coral-hover) !important;
+            background: var(--court-coral-hover) !important;
+        }
+
+        div[data-testid="stNumberInput"] input {
+            font-weight: 700;
+            text-align: right;
+        }
+
         @media (max-width: 720px) {
             [data-testid="stMainBlockContainer"] {
                 padding: 2rem 1rem 4rem;

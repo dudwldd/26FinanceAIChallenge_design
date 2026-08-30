@@ -129,39 +129,100 @@ if workflow_screen == "portfolio":
     render_step_navigation("portfolio")
     st.title("Portfolio Thesis Checker")
     st.caption("포트폴리오를 추천하지 않고, 입력한 구성과 투자 논리를 점검합니다.")
-    st.subheader("포트폴리오 입력")
-    with st.form("portfolio_form"):
-        portfolio_input = st.data_editor(
-            st.session_state.get(
-                "portfolio_input",
-                pd.DataFrame(
-                    [
-                        {"ticker": "AAPL", "weight": 40.0},
-                        {"ticker": "MSFT", "weight": 30.0},
-                        {"ticker": "NVDA", "weight": 30.0},
-                    ]
-                ),
-            ),
-            column_config={
-                "ticker": st.column_config.TextColumn("Ticker"),
-                "weight": st.column_config.NumberColumn(
-                    "비중 (%)", min_value=0.01, max_value=100.0, format="%.2f"
-                ),
-            },
-            num_rows="dynamic",
-            hide_index=True,
-            width="stretch",
+    if "portfolio_rows" not in st.session_state:
+        st.session_state["portfolio_rows"] = [
+            {"id": 1, "ticker": "AAPL", "weight": 40.0},
+            {"id": 2, "ticker": "MSFT", "weight": 30.0},
+            {"id": 3, "ticker": "NVDA", "weight": 30.0},
+        ]
+        st.session_state["portfolio_row_sequence"] = 3
+
+    rows = st.session_state["portfolio_rows"]
+    with st.container(border=True):
+        st.markdown('<h2 class="portfolio-card-title">포트폴리오 입력</h2>', unsafe_allow_html=True)
+        ticker_header, weight_header, _ = st.columns([6, 1.55, 0.48], gap="small")
+        ticker_header.markdown('<div class="portfolio-column-label">TICKER</div>', unsafe_allow_html=True)
+        weight_header.markdown('<div class="portfolio-column-label right">비중 (%)</div>', unsafe_allow_html=True)
+
+        remove_row_id = None
+        for row in rows:
+            ticker_column, weight_column, remove_column = st.columns(
+                [6, 1.55, 0.48], gap="small"
+            )
+            row["ticker"] = ticker_column.text_input(
+                "Ticker",
+                value=str(row["ticker"]),
+                key=f'portfolio_ticker_{row["id"]}',
+                label_visibility="collapsed",
+            ).upper()
+            row["weight"] = weight_column.number_input(
+                "비중",
+                min_value=0.0,
+                max_value=100.0,
+                value=float(row["weight"]),
+                step=1.0,
+                key=f'portfolio_weight_{row["id"]}',
+                label_visibility="collapsed",
+            )
+            if remove_column.button(
+                "×",
+                key=f'portfolio_remove_{row["id"]}',
+                disabled=len(rows) == 1,
+                use_container_width=True,
+            ):
+                remove_row_id = row["id"]
+
+        if remove_row_id is not None:
+            st.session_state["portfolio_rows"] = [
+                row for row in rows if row["id"] != remove_row_id
+            ]
+            st.rerun()
+
+        total_weight = sum(float(row["weight"]) for row in rows)
+        add_column, total_column = st.columns([1, 1])
+        with add_column:
+            if st.button("＋ 종목 추가", disabled=len(rows) >= 10):
+                st.session_state["portfolio_row_sequence"] += 1
+                rows.append(
+                    {
+                        "id": st.session_state["portfolio_row_sequence"],
+                        "ticker": "",
+                        "weight": 0.0,
+                    }
+                )
+                st.rerun()
+        total_state = "valid" if abs(total_weight - 100.0) < 0.01 else "invalid"
+        total_column.markdown(
+            f'<div class="portfolio-total {total_state}">합계 '
+            f'<strong>{total_weight:g}%</strong></div>',
+            unsafe_allow_html=True,
         )
+        st.markdown('<div class="portfolio-rule"></div>', unsafe_allow_html=True)
         st.caption("최대 10개 종목까지 입력할 수 있으며 비중 합계는 100%여야 합니다.")
+
+    with st.container(border=True):
+        st.markdown('<h2 class="portfolio-card-title thesis">포트폴리오 구성 논리</h2>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="portfolio-card-copy">이 포트폴리오를 구성한 이유와 투자 판단의 근거를 자유롭게 작성해주세요.</p>',
+            unsafe_allow_html=True,
+        )
         thesis = st.text_area(
-            "포트폴리오 구성 논리",
+            "포트폴리오 구성 논리 작성",
             value=st.session_state.get("portfolio_thesis", ""),
             placeholder="예: AI 성장주를 여러 기업에 나누어 투자해 위험을 분산했다고 생각한다.",
+            height=180,
+            label_visibility="collapsed",
         )
-        portfolio_submitted = st.form_submit_button(
-            "다음: 투자 기준 입력 →", use_container_width=True
-        )
+    _, next_column = st.columns([2.4, 1])
+    portfolio_submitted = next_column.button(
+        "다음: 투자 기준 입력 →",
+        type="primary",
+        use_container_width=True,
+    )
     if portfolio_submitted:
+        portfolio_input = pd.DataFrame(
+            [{"ticker": row["ticker"], "weight": row["weight"]} for row in rows]
+        )
         try:
             validate_portfolio(portfolio_input.to_dict("records"))
         except PortfolioValidationError as exc:
