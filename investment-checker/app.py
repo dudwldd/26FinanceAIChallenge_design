@@ -391,9 +391,9 @@ if workflow_screen == "criteria":
         "예상 투자 기간",
         INVESTMENT_HORIZONS,
         index=None,
-        horizontal=True,
         key="criteria_investment_horizon",
         label_visibility="collapsed",
+        width="stretch",
     )
 
     st.markdown(

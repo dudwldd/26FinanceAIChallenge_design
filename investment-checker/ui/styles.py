@@ -639,8 +639,12 @@ def apply_global_styles() -> None:
         }
 
         .analysis-loading {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             max-width: 620px;
-            margin: 3.5rem auto 0;
+            min-height: calc(100vh - 140px);
+            margin: 0 auto;
             text-align: center;
         }
 

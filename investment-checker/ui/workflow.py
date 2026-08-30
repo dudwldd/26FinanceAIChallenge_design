@@ -49,22 +49,20 @@ def _loading_markup(active_index: int) -> str:
         else:
             state, symbol = "pending", "•"
         rows.append(
-            f"""
-            <div class="loading-stage {state}">
-                <div class="loading-node">{symbol}</div>
-                <div><strong>{title}</strong><p>{description}</p></div>
-            </div>
-            """
+            f'<div class="loading-stage {state}">'
+            f'<div class="loading-node">{symbol}</div>'
+            f'<div><strong>{title}</strong><p>{description}</p></div>'
+            '</div>'
         )
-    return f"""
-    <section class="analysis-loading">
-        <div class="loading-spinner"></div>
-        <h1>추가 질문 생성 중</h1>
-        <p class="loading-lead">입력하신 포트폴리오와 투자 논리를 바탕으로<br>
-        확인이 필요한 부분을 분석하고 있습니다.</p>
-        <div class="loading-card">{''.join(rows)}</div>
-    </section>
-    """
+    return (
+        '<section class="analysis-loading">'
+        '<div class="loading-spinner"></div>'
+        '<h1>추가 질문 생성 중</h1>'
+        '<p class="loading-lead">입력하신 포트폴리오와 투자 논리를 바탕으로<br>'
+        '확인이 필요한 부분을 분석하고 있습니다.</p>'
+        f'<div class="loading-card">{"".join(rows)}</div>'
+        '</section>'
+    )
 
 
 def render_question_loading() -> None:
