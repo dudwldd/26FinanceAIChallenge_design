@@ -23,6 +23,7 @@ def scroll_to_top_on_screen_change(screen: str) -> None:
     components.html(
         """
         <script>
+        const workflowScreen = "%WORKFLOW_SCREEN%";
         const scrollMainToTop = () => {
             const doc = window.parent.document;
             const selectors = [
@@ -58,7 +59,9 @@ def scroll_to_top_on_screen_change(screen: str) -> None:
             window.setTimeout(() => shield.remove(), 300);
         }
         </script>
-        """.replace("%REMOVE_SHIELD%", "true" if screen != "loading" else "false"),
+        """
+        .replace("%WORKFLOW_SCREEN%", screen)
+        .replace("%REMOVE_SHIELD%", "true" if screen != "loading" else "false"),
         height=0,
         width=0,
     )
