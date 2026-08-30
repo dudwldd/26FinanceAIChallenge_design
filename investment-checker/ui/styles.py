@@ -344,6 +344,191 @@ def apply_global_styles() -> None:
             line-height: 1.55;
         }
 
+        .criteria-hero {
+            margin: 2.5rem 0 3.5rem;
+        }
+
+        .criteria-hero h1 {
+            margin: 0 0 0.7rem !important;
+            padding: 0 !important;
+            color: #111827;
+            font-family: "Noto Serif KR", "Batang", serif !important;
+            font-size: clamp(2.45rem, 4vw, 3rem) !important;
+            font-weight: 500 !important;
+            line-height: 1.25 !important;
+            letter-spacing: -0.055em;
+        }
+
+        .criteria-hero p {
+            margin: 0;
+            color: #9aa4b3;
+            font-size: 0.98rem;
+        }
+
+        .stButton > button {
+            font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif !important;
+        }
+
+        .criteria-question {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            margin: 3rem 0 1.25rem;
+            color: #1f2a3d;
+        }
+
+        .criteria-question span {
+            display: inline-grid;
+            min-width: 34px;
+            height: 34px;
+            place-items: center;
+            border-radius: 50%;
+            background: #fff2f0;
+            color: var(--court-coral);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .criteria-question strong {
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        div[data-testid="stPills"] {
+            margin-bottom: 0.9rem;
+        }
+
+        div[data-testid="stPills"] button {
+            min-height: 46px;
+            padding: 0.65rem 1.25rem;
+            border: 1px solid #d9e1ec;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #344054;
+            font-family: "Noto Sans KR", sans-serif;
+            font-size: 0.94rem;
+            transition: color 140ms ease, border-color 140ms ease,
+                background 140ms ease, transform 140ms ease;
+        }
+
+        div[data-testid="stPills"] button:hover {
+            border-color: var(--court-coral);
+            background: #fff7f6;
+            color: var(--court-coral);
+            transform: translateY(-1px);
+        }
+
+        div[data-testid="stPills"] button[aria-pressed="true"] {
+            border-color: var(--court-coral);
+            background: #fff1ef;
+            color: var(--court-coral);
+        }
+
+        div[data-testid="stVerticalBlock"]:has(
+            > div[data-testid="stElementContainer"] .factor-detail-heading
+        ) {
+            margin-top: 0.5rem;
+            padding: 1.4rem 1.55rem 1.5rem !important;
+            border: 1px solid #dce4ef !important;
+            border-radius: 16px !important;
+            background: #f7f9fc !important;
+        }
+
+        .factor-detail-heading {
+            margin-bottom: 0.9rem;
+            color: #344054;
+        }
+
+        .factor-detail-heading strong {
+            font-size: 0.94rem;
+            font-weight: 500;
+        }
+
+        .factor-detail-heading span,
+        .factor-detail-heading p {
+            color: #91a0b6;
+        }
+
+        .factor-detail-heading span {
+            margin-left: 0.25rem;
+            font-size: 0.82rem;
+        }
+
+        .factor-detail-heading p {
+            margin: 0.3rem 0 0;
+            font-size: 0.83rem;
+        }
+
+        div[data-testid="stRadio"] [role="radiogroup"] {
+            gap: 0.55rem;
+        }
+
+        div[data-testid="stRadio"] [role="radiogroup"] > label {
+            width: 100%;
+            min-height: 54px;
+            margin: 0;
+            padding: 0.75rem 1rem;
+            border: 1px solid #dbe3ee;
+            border-radius: 13px;
+            background: #ffffff;
+            transition: border-color 140ms ease, background 140ms ease,
+                box-shadow 140ms ease, transform 140ms ease;
+        }
+
+        div[data-testid="stRadio"] [role="radiogroup"] > label:hover {
+            border-color: #9eb0c8;
+            background: #f7f9fc;
+            box-shadow: 0 3px 10px rgba(44, 62, 88, 0.05);
+            transform: translateY(-1px);
+        }
+
+        div[data-testid="stRadio"] [role="radiogroup"] > label:has(input:checked) {
+            border-color: var(--court-coral);
+            background: #fff7f6;
+        }
+
+        div[data-testid="stRadio"] [role="radiogroup"] > label p {
+            color: #344054;
+            font-size: 0.94rem;
+        }
+
+        div[data-testid="stVerticalBlock"]:has(
+            > div[data-testid="stElementContainer"] .evidence-panel-heading
+        ) {
+            margin: 2rem 0 0.5rem;
+            padding: 1.6rem 1.75rem 1.7rem !important;
+            border: 1px solid #dce4ef !important;
+            border-radius: 18px !important;
+            background: #f7f9fc !important;
+        }
+
+        .evidence-panel-heading strong {
+            color: #344054;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .evidence-panel-heading p {
+            margin: 0.35rem 0 1.1rem;
+            color: #8fa0b7;
+            font-size: 0.86rem;
+        }
+
+        div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
+        [data-testid="stFileUploaderDropzone"] {
+            min-height: 210px;
+            border: 1px dashed #d7e0ec;
+            border-radius: 16px;
+            background: #ffffff;
+        }
+
+        div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
+        div[data-testid="stButton"] button {
+            color: #ffffff;
+            border-color: #111827;
+            background: #111827;
+        }
+
         .analysis-loading {
             max-width: 620px;
             margin: 3.5rem auto 0;

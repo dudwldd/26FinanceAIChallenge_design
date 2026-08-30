@@ -247,16 +247,92 @@ if workflow_screen == "portfolio":
 
 if workflow_screen == "criteria":
     render_step_navigation("criteria")
-    if st.button("← 포트폴리오 입력으로"):
+    if st.button("← 포트폴리오 입력으로", key="criteria_back"):
         st.session_state["workflow_screen"] = "portfolio"
         st.rerun()
-    st.title("투자 기준 입력")
-    st.caption("투자 판단의 근거와 기준을 입력하고, 관련 자료를 첨부하세요.")
-    with st.form("criteria_form"):
+    st.markdown(
+        """
+        <section class="criteria-hero">
+            <h1>투자 기준 입력</h1>
+            <p>투자 판단의 근거와 기준을 입력하고, 관련 자료를 첨부하세요.</p>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<div class="criteria-question"><span>1</span>'
+        '<strong>이 판단에서 중요하게 본 근거는 무엇인가요? (복수 선택 가능)</strong></div>',
+        unsafe_allow_html=True,
+    )
+    thesis_factors = st.pills(
+        "중요하게 본 근거",
+        THESIS_FACTORS[:-1],
+        selection_mode="multi",
+        default=None,
+        key="criteria_thesis_factors",
+        label_visibility="collapsed",
+    )
+    with st.container(border=True):
+        st.markdown(
+            """
+            <div class="factor-detail-heading">
+                <strong>선택한 근거를 조금 더 구체적으로 설명해주세요.</strong>
+                <span>(선택)</span>
+                <p>어떤 수치, 변화, 사건 또는 이유를 보고 그렇게 판단했는지 자유롭게 작성해주세요.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        factor_detail = st.text_area(
+            "선택 근거 상세 설명",
+            placeholder="최근 3년간 매출과 영업이익이 꾸준히 증가했고, AI 관련 수요 확대가 계속될 것으로 판단했습니다.",
+            height=120,
+            key="criteria_factor_detail",
+            label_visibility="collapsed",
+        )
+
+    st.markdown(
+        '<div class="criteria-question"><span>2</span>'
+        '<strong>이 포트폴리오를 구성하게 된 가장 큰 계기는 무엇인가요?</strong></div>',
+        unsafe_allow_html=True,
+    )
+    decision_trigger = st.radio(
+        "포트폴리오 구성 계기",
+        DECISION_TRIGGERS,
+        index=None,
+        key="criteria_decision_trigger",
+        label_visibility="collapsed",
+    )
+
+    st.markdown(
+        '<div class="criteria-question"><span>3</span>'
+        '<strong>판단하기 전에 어느 정도까지 자료를 확인했나요?</strong></div>',
+        unsafe_allow_html=True,
+    )
+    evidence_level = st.radio(
+        "자료 확인 수준",
+        EVIDENCE_LEVELS,
+        index=None,
+        key="criteria_evidence_level",
+        label_visibility="collapsed",
+    )
+
+    with st.container(border=True):
+        st.markdown(
+            """
+            <div class="evidence-panel-heading">
+                <strong>참고한 자료 첨부</strong>
+                <p>투자 판단에 참고한 자료가 있다면 첨부해주세요. 텍스트 기반 PDF 파일 1개를 업로드할 수 있습니다.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         evidence_pdf = st.file_uploader(
-            "판단에 참고한 PDF (선택)",
+            "PDF 파일 업로드",
             type=["pdf"],
             accept_multiple_files=False,
+            key="criteria_evidence_pdf",
             help=(
                 "10MB 이하의 PDF 1개를 첨부할 수 있습니다. "
                 "파일은 DB에 저장하지 않으며, AI 분석을 선택한 경우에만 "
@@ -265,48 +341,74 @@ if workflow_screen == "criteria":
         )
         if evidence_pdf is not None:
             st.caption(f"첨부된 자료: {evidence_pdf.name}")
+        url_column, url_button_column = st.columns([5, 1], gap="small")
+        evidence_url = url_column.text_input(
+            "참고 URL",
+            placeholder="https://example.com/report",
+            key="criteria_evidence_url",
+            label_visibility="collapsed",
+        )
+        add_url = url_button_column.button(
+            "URL 추가",
+            key="criteria_add_url",
+            use_container_width=True,
+        )
+        if add_url:
+            if not evidence_url.startswith(("https://", "http://")):
+                st.error("http:// 또는 https://로 시작하는 URL을 입력해주세요.")
+            else:
+                st.session_state["criteria_saved_url"] = evidence_url
+                st.success("참고 URL이 추가되었습니다.")
+        if st.session_state.get("criteria_saved_url"):
+            st.caption("추가된 URL: " + st.session_state["criteria_saved_url"])
 
-        thesis_factors = st.multiselect(
-            "1. 이 판단에서 중요하게 본 근거는 무엇인가요? (복수 선택 가능)",
-            THESIS_FACTORS,
-        )
-        decision_trigger = st.radio(
-            "2. 이 포트폴리오를 구성하게 된 가장 큰 계기는 무엇인가요?",
-            DECISION_TRIGGERS,
-            index=None,
-        )
-        evidence_level = st.radio(
-            "3. 판단하기 전에 어느 정도까지 자료를 확인했나요?",
-            EVIDENCE_LEVELS,
-            index=None,
-        )
-        investment_horizon = st.radio(
-            "4. 예상하는 투자 기간은 어느 정도인가요?",
-            INVESTMENT_HORIZONS,
-            index=None,
-            horizontal=True,
-        )
-        loss_response = st.radio(
-            "5. 포트폴리오 가치가 30% 하락한다면 어떻게 대응할 가능성이 가장 높은가요?",
-            LOSS_RESPONSES,
-            index=None,
-        )
+    st.markdown(
+        '<div class="criteria-question"><span>4</span>'
+        '<strong>예상하는 투자 기간은 어느 정도인가요?</strong></div>',
+        unsafe_allow_html=True,
+    )
+    investment_horizon = st.radio(
+        "예상 투자 기간",
+        INVESTMENT_HORIZONS,
+        index=None,
+        horizontal=True,
+        key="criteria_investment_horizon",
+        label_visibility="collapsed",
+    )
 
-        use_ai_analysis = st.checkbox(
-            "반대심문 답변 후 AI로 최종 논리 일관성을 분석합니다.",
-            value=False,
-            disabled=not bool(openai_api_key),
-            help=(
-                "선택하면 최초 투자 논리, 금융 데이터 요약, 반대심문 답변이 "
-                "최종 단계에서 OpenAI API로 전송됩니다. 매수·매도 추천은 생성하지 않습니다."
-            ),
-        )
-        if not openai_api_key:
-            st.caption("AI 분석을 사용하려면 OPENAI_API_KEY를 설정해주세요.")
+    st.markdown(
+        '<div class="criteria-question"><span>5</span>'
+        '<strong>포트폴리오 가치가 30% 하락한다면 어떻게 대응할 가능성이 가장 높은가요?</strong></div>',
+        unsafe_allow_html=True,
+    )
+    loss_response = st.radio(
+        "손실 대응",
+        LOSS_RESPONSES,
+        index=None,
+        key="criteria_loss_response",
+        label_visibility="collapsed",
+    )
 
-        criteria_submitted = st.form_submit_button(
-            "추가 질문 시작 →", use_container_width=True
-        )
+    use_ai_analysis = st.checkbox(
+        "반대심문 답변 후 AI로 최종 논리 일관성을 분석합니다.",
+        value=False,
+        disabled=not bool(openai_api_key),
+        key="criteria_use_ai",
+        help=(
+            "선택하면 최초 투자 논리, 금융 데이터 요약, 반대심문 답변이 "
+            "최종 단계에서 OpenAI API로 전송됩니다. 매수·매도 추천은 생성하지 않습니다."
+        ),
+    )
+    if not openai_api_key:
+        st.caption("AI 분석을 사용하려면 OPENAI_API_KEY를 설정해주세요.")
+
+    _, criteria_button_column = st.columns([2.2, 1])
+    criteria_submitted = criteria_button_column.button(
+        "추가 질문 시작 →",
+        type="primary",
+        use_container_width=True,
+        key="criteria_submit",
+    )
 
     if criteria_submitted:
         if not all(
@@ -321,6 +423,8 @@ if workflow_screen == "criteria":
                 "investment_horizon": investment_horizon,
                 "loss_response": loss_response,
                 "use_ai_analysis": use_ai_analysis,
+                "factor_detail": factor_detail,
+                "evidence_url": st.session_state.get("criteria_saved_url", ""),
             }
             st.session_state["evidence_pdf"] = evidence_pdf
             st.session_state["workflow_screen"] = "loading"
