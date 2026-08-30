@@ -30,6 +30,7 @@ from logic.cross_examination import (
     validate_cross_examination_answers,
 )
 from logic.thesis_standards import evaluate_thesis_standards
+from ui.login import render_login
 from ui.styles import apply_global_styles
 
 
@@ -114,6 +115,10 @@ st.set_page_config(
     layout="centered",
 )
 apply_global_styles()
+
+if not render_login():
+    st.stop()
+
 st.title("Portfolio Thesis Checker")
 st.caption("포트폴리오를 추천하지 않고, 입력한 구성과 투자 논리를 점검합니다.")
 
