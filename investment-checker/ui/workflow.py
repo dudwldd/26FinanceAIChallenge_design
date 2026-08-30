@@ -33,6 +33,40 @@ def scroll_to_top_on_screen_change(screen: str) -> None:
         };
         scrollMainToTop();
         window.setTimeout(scrollMainToTop, 80);
+        window.setTimeout(scrollMainToTop, 250);
+        window.setTimeout(scrollMainToTop, 500);
+
+        const shield = window.parent.document.getElementById('workflow-transition-shield');
+        if (shield && %REMOVE_SHIELD%) {
+            window.setTimeout(() => shield.remove(), 300);
+        }
+        </script>
+        """.replace("%REMOVE_SHIELD%", "true" if screen != "loading" else "false"),
+        height=0,
+        width=0,
+    )
+
+
+def _keep_loading_background_covered() -> None:
+    """Keep a white layer mounted across the loading-to-content rerun."""
+    components.html(
+        """
+        <script>
+        const doc = window.parent.document;
+        if (!doc.getElementById('workflow-transition-shield')) {
+            const shield = doc.createElement('div');
+            shield.id = 'workflow-transition-shield';
+            Object.assign(shield.style, {
+                position: 'fixed',
+                zIndex: '90',
+                top: '70px',
+                right: '0',
+                bottom: '0',
+                left: '0',
+                background: '#ffffff'
+            });
+            doc.body.appendChild(shield);
+        }
         </script>
         """,
         height=0,
@@ -94,6 +128,7 @@ def _loading_markup(active_index: int) -> str:
 
 def render_question_loading() -> None:
     """Show a short staged transition, then advance to analysis."""
+    _keep_loading_background_covered()
     placeholder = st.empty()
     for active_index in range(3):
         placeholder.markdown(
