@@ -8,6 +8,8 @@ def apply_global_styles() -> None:
     st.markdown(
         """
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600&family=Playfair+Display:wght@600&display=swap');
+
         :root {
             --court-ink: #202124;
             --court-muted: #72767f;
@@ -23,6 +25,7 @@ def apply_global_styles() -> None:
         .stApp {
             background: #ffffff;
             color: var(--court-ink);
+            font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
         }
 
         [data-testid="stHeader"] {
@@ -44,7 +47,7 @@ def apply_global_styles() -> None:
         }
 
         h1 {
-            font-family: Georgia, "Times New Roman", serif;
+            font-family: "Playfair Display", Georgia, "Times New Roman", serif;
             font-size: clamp(2.25rem, 5vw, 3.45rem) !important;
             line-height: 1.08 !important;
             font-weight: 500 !important;
@@ -393,7 +396,7 @@ def apply_global_styles() -> None:
 
         div[data-testid="stVerticalBlockBorderWrapper"] {
             margin-bottom: 1.4rem;
-            padding: 2rem 2.45rem 2.2rem;
+            padding: 2.8rem 3.2rem 2.9rem;
             border: 1px solid #dbe3ee;
             border-radius: 22px;
             background: #ffffff;
@@ -401,10 +404,11 @@ def apply_global_styles() -> None:
         }
 
         .portfolio-card-title {
-            margin: 0 0 1.9rem !important;
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: 1.65rem !important;
+            margin: 0 0 2.25rem !important;
+            font-family: "Noto Serif KR", "Batang", serif;
+            font-size: 1.55rem !important;
             font-weight: 500 !important;
+            letter-spacing: -0.04em;
         }
 
         .portfolio-card-title.thesis {
@@ -414,10 +418,11 @@ def apply_global_styles() -> None:
         .portfolio-card-copy {
             margin: 0 0 1.25rem;
             color: #8ea0b9;
+            font-size: 0.95rem;
         }
 
         .portfolio-column-label {
-            padding: 0 0.3rem 0.75rem;
+            padding: 0 0.3rem 0.85rem;
             border-bottom: 1px solid #dce4ef;
             color: #93a3ba;
             font-size: 0.78rem;
@@ -471,6 +476,16 @@ def apply_global_styles() -> None:
             text-align: right;
         }
 
+        div[data-baseweb="input"] > div {
+            min-height: 52px;
+        }
+
+        div[data-testid="stTextInput"] input {
+            color: #111827;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
         @media (max-width: 720px) {
             [data-testid="stMainBlockContainer"] {
                 padding: 2rem 1rem 4rem;
@@ -478,6 +493,11 @@ def apply_global_styles() -> None:
 
             [data-testid="stForm"] {
                 padding: 1rem;
+            }
+
+            div[data-testid="stVerticalBlockBorderWrapper"] {
+                padding: 1.5rem 1.2rem 1.7rem;
+                border-radius: 17px;
             }
 
             .login-intro {
