@@ -31,8 +31,10 @@ def apply_global_styles() -> None:
         }
 
         [data-testid="stMainBlockContainer"] {
-            max-width: 940px;
-            padding-top: 3.5rem;
+            max-width: 1280px;
+            padding-top: 2.75rem;
+            padding-left: 2.75rem;
+            padding-right: 2.75rem;
             padding-bottom: 6rem;
         }
 
@@ -145,8 +147,8 @@ def apply_global_styles() -> None:
         }
 
         .login-intro {
-            min-height: 550px;
-            padding: 7rem 2.5rem 4rem 0.5rem;
+            min-height: 540px;
+            padding: 5.5rem 4.5rem 4rem 0.5rem;
             border-right: 1px solid var(--court-line);
         }
 
@@ -164,7 +166,9 @@ def apply_global_styles() -> None:
 
         .login-intro h1 {
             margin: 0 0 1.2rem !important;
-            font-size: clamp(2.25rem, 4.2vw, 3.25rem) !important;
+            max-width: 590px;
+            font-size: clamp(2rem, 3.1vw, 2.75rem) !important;
+            line-height: 1.18 !important;
         }
 
         .login-lead {
@@ -193,7 +197,7 @@ def apply_global_styles() -> None:
         }
 
         .login-form-heading {
-            padding-top: 5.8rem;
+            padding-top: 4.7rem;
         }
 
         .login-form-heading h2 {
