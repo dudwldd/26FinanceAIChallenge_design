@@ -394,21 +394,25 @@ def apply_global_styles() -> None:
             background: #646cff;
         }
 
-        div[data-testid="stVerticalBlockBorderWrapper"] {
+        div[data-testid="stVerticalBlock"]:has(
+            > div[data-testid="stElementContainer"] .portfolio-card-title
+        ) {
             margin-bottom: 1.4rem;
-            padding: 2.8rem 3.2rem 2.9rem;
-            border: 1px solid #dbe3ee;
-            border-radius: 22px;
-            background: #ffffff;
-            box-shadow: 0 3px 12px rgba(43, 59, 82, 0.035);
+            padding: 3rem 3.2rem 3.1rem !important;
+            border: 1px solid #dbe3ee !important;
+            border-radius: 22px !important;
+            background: #ffffff !important;
+            box-shadow: 0 3px 12px rgba(43, 59, 82, 0.035) !important;
         }
 
         .portfolio-card-title {
             margin: 0 0 2.25rem !important;
-            font-family: "Noto Serif KR", "Batang", serif;
+            padding: 0 !important;
+            font-family: "Noto Serif KR", "Batang", serif !important;
             font-size: 1.55rem !important;
             font-weight: 500 !important;
             letter-spacing: -0.04em;
+            line-height: 1.45 !important;
         }
 
         .portfolio-card-title.thesis {
@@ -476,6 +480,10 @@ def apply_global_styles() -> None:
             text-align: right;
         }
 
+        div[data-testid="stNumberInput"] button {
+            display: none;
+        }
+
         div[data-baseweb="input"] > div {
             min-height: 52px;
         }
@@ -495,8 +503,10 @@ def apply_global_styles() -> None:
                 padding: 1rem;
             }
 
-            div[data-testid="stVerticalBlockBorderWrapper"] {
-                padding: 1.5rem 1.2rem 1.7rem;
+            div[data-testid="stVerticalBlock"]:has(
+                > div[data-testid="stElementContainer"] .portfolio-card-title
+            ) {
+                padding: 1.6rem 1.3rem 1.8rem !important;
                 border-radius: 17px;
             }
 
