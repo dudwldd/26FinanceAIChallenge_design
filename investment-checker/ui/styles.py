@@ -250,6 +250,147 @@ def apply_global_styles() -> None:
             font-weight: 700;
         }
 
+        .workflow-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: -1.25rem 0 3.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--court-line);
+            font-family: Georgia, "Times New Roman", serif;
+        }
+
+        .workflow-steps {
+            display: flex;
+            gap: 1.5rem;
+            color: #a0a4ac;
+            font-family: sans-serif;
+            font-size: 0.78rem;
+        }
+
+        .workflow-step span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin-right: 0.4rem;
+            border-radius: 50%;
+            background: #d8dbe0;
+            vertical-align: middle;
+        }
+
+        .workflow-step.is-active {
+            color: var(--court-ink);
+            font-weight: 700;
+        }
+
+        .workflow-step.is-active span {
+            background: var(--court-coral);
+        }
+
+        .workflow-step.is-complete span {
+            background: var(--court-mint);
+        }
+
+        .analysis-loading {
+            max-width: 620px;
+            margin: 3.5rem auto 0;
+            text-align: center;
+        }
+
+        .analysis-loading h1 {
+            margin-top: 1.25rem !important;
+            font-size: 2.35rem !important;
+        }
+
+        .loading-spinner {
+            width: 74px;
+            height: 74px;
+            margin: auto;
+            border: 5px solid #eef0ff;
+            border-top-color: #646cff;
+            border-radius: 50%;
+            animation: court-spin 0.9s linear infinite;
+        }
+
+        @keyframes court-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-lead {
+            color: #76849f;
+        }
+
+        .loading-card {
+            margin-top: 2.6rem;
+            padding: 1.4rem 1.7rem;
+            border: 1px solid #dde2ed;
+            border-radius: 18px;
+            background: #ffffff;
+            text-align: left;
+            box-shadow: 0 10px 35px rgba(42, 55, 82, 0.04);
+        }
+
+        .loading-stage {
+            position: relative;
+            display: grid;
+            grid-template-columns: 38px 1fr;
+            min-height: 76px;
+            color: #a3adbf;
+        }
+
+        .loading-stage:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 34px;
+            bottom: -2px;
+            left: 15px;
+            width: 2px;
+            background: #e5e9f1;
+        }
+
+        .loading-stage.complete:not(:last-child)::after,
+        .loading-stage.active:not(:last-child)::after {
+            background: #666cff;
+        }
+
+        .loading-node {
+            z-index: 1;
+            display: grid;
+            width: 32px;
+            height: 32px;
+            place-items: center;
+            border: 2px solid #e1e6ef;
+            border-radius: 50%;
+            background: #f8f9fc;
+            font-weight: 800;
+        }
+
+        .loading-stage strong {
+            display: block;
+            padding-top: 0.25rem;
+            font-size: 0.98rem;
+        }
+
+        .loading-stage p {
+            margin: 0.15rem 0 0;
+            font-size: 0.86rem;
+        }
+
+        .loading-stage.active,
+        .loading-stage.complete {
+            color: #6068ff;
+        }
+
+        .loading-stage.active .loading-node {
+            animation: court-spin 1.1s linear infinite;
+        }
+
+        .loading-stage.complete .loading-node {
+            color: #ffffff;
+            border-color: #646cff;
+            background: #646cff;
+        }
+
         @media (max-width: 720px) {
             [data-testid="stMainBlockContainer"] {
                 padding: 2rem 1rem 4rem;
@@ -268,6 +409,21 @@ def apply_global_styles() -> None:
 
             .login-form-heading {
                 padding-top: 1rem;
+            }
+
+            .workflow-nav,
+            .workflow-steps {
+                align-items: flex-start;
+            }
+
+            .workflow-nav {
+                gap: 1rem;
+            }
+
+            .workflow-steps {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.45rem 0.8rem;
             }
         }
         </style>

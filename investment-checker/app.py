@@ -32,6 +32,7 @@ from logic.cross_examination import (
 from logic.thesis_standards import evaluate_thesis_standards
 from ui.login import render_login
 from ui.styles import apply_global_styles
+from ui.workflow import render_question_loading, render_step_navigation
 
 
 THESIS_FACTORS = [
@@ -119,92 +120,161 @@ apply_global_styles()
 if not render_login():
     st.stop()
 
-st.title("Portfolio Thesis Checker")
-st.caption("포트폴리오를 추천하지 않고, 입력한 구성과 투자 논리를 점검합니다.")
+if "workflow_screen" not in st.session_state:
+    st.session_state["workflow_screen"] = "portfolio"
 
-with st.form("thesis_form"):
+workflow_screen = st.session_state["workflow_screen"]
+
+if workflow_screen == "portfolio":
+    render_step_navigation("portfolio")
+    st.title("Portfolio Thesis Checker")
+    st.caption("포트폴리오를 추천하지 않고, 입력한 구성과 투자 논리를 점검합니다.")
     st.subheader("포트폴리오 입력")
-    portfolio_input = st.data_editor(
-        pd.DataFrame(
-            [
-                {"ticker": "AAPL", "weight": 40.0},
-                {"ticker": "MSFT", "weight": 30.0},
-                {"ticker": "NVDA", "weight": 30.0},
-            ]
-        ),
-        column_config={
-            "ticker": st.column_config.TextColumn(
-                "Ticker", help="미국 상장주식 ticker를 입력하세요."
+    with st.form("portfolio_form"):
+        portfolio_input = st.data_editor(
+            st.session_state.get(
+                "portfolio_input",
+                pd.DataFrame(
+                    [
+                        {"ticker": "AAPL", "weight": 40.0},
+                        {"ticker": "MSFT", "weight": 30.0},
+                        {"ticker": "NVDA", "weight": 30.0},
+                    ]
+                ),
             ),
-            "weight": st.column_config.NumberColumn(
-                "비중 (%)", min_value=0.01, max_value=100.0, format="%.2f"
+            column_config={
+                "ticker": st.column_config.TextColumn("Ticker"),
+                "weight": st.column_config.NumberColumn(
+                    "비중 (%)", min_value=0.01, max_value=100.0, format="%.2f"
+                ),
+            },
+            num_rows="dynamic",
+            hide_index=True,
+            width="stretch",
+        )
+        st.caption("최대 10개 종목까지 입력할 수 있으며 비중 합계는 100%여야 합니다.")
+        thesis = st.text_area(
+            "포트폴리오 구성 논리",
+            value=st.session_state.get("portfolio_thesis", ""),
+            placeholder="예: AI 성장주를 여러 기업에 나누어 투자해 위험을 분산했다고 생각한다.",
+        )
+        portfolio_submitted = st.form_submit_button(
+            "다음: 투자 기준 입력 →", use_container_width=True
+        )
+    if portfolio_submitted:
+        try:
+            validate_portfolio(portfolio_input.to_dict("records"))
+        except PortfolioValidationError as exc:
+            st.error(str(exc))
+        else:
+            if not thesis.strip():
+                st.error("포트폴리오 구성 논리를 입력해주세요.")
+            else:
+                st.session_state["portfolio_input"] = portfolio_input
+                st.session_state["portfolio_thesis"] = thesis.strip()
+                st.session_state["workflow_screen"] = "criteria"
+                st.rerun()
+    st.stop()
+
+if workflow_screen == "criteria":
+    render_step_navigation("criteria")
+    if st.button("← 포트폴리오 입력으로"):
+        st.session_state["workflow_screen"] = "portfolio"
+        st.rerun()
+    st.title("투자 기준 입력")
+    st.caption("투자 판단의 근거와 기준을 입력하고, 관련 자료를 첨부하세요.")
+    with st.form("criteria_form"):
+        evidence_pdf = st.file_uploader(
+            "판단에 참고한 PDF (선택)",
+            type=["pdf"],
+            accept_multiple_files=False,
+            help=(
+                "10MB 이하의 PDF 1개를 첨부할 수 있습니다. "
+                "파일은 DB에 저장하지 않으며, AI 분석을 선택한 경우에만 "
+                "추출된 텍스트가 OpenAI API로 전송됩니다."
             ),
-        },
-        num_rows="dynamic",
-        hide_index=True,
-        width="stretch",
-    )
-    st.caption("최대 10개 종목까지 입력할 수 있으며 비중 합계는 100%여야 합니다.")
+        )
+        if evidence_pdf is not None:
+            st.caption(f"첨부된 자료: {evidence_pdf.name}")
 
-    thesis = st.text_area(
-        "포트폴리오 구성 논리",
-        placeholder="예: AI 성장주를 여러 기업에 나누어 투자해 위험을 분산했다고 생각한다.",
-        help="이 종목들과 비중을 선택한 이유를 자유롭게 적어주세요.",
-    )
+        thesis_factors = st.multiselect(
+            "1. 이 판단에서 중요하게 본 근거는 무엇인가요? (복수 선택 가능)",
+            THESIS_FACTORS,
+        )
+        decision_trigger = st.radio(
+            "2. 이 포트폴리오를 구성하게 된 가장 큰 계기는 무엇인가요?",
+            DECISION_TRIGGERS,
+            index=None,
+        )
+        evidence_level = st.radio(
+            "3. 판단하기 전에 어느 정도까지 자료를 확인했나요?",
+            EVIDENCE_LEVELS,
+            index=None,
+        )
+        investment_horizon = st.radio(
+            "4. 예상하는 투자 기간은 어느 정도인가요?",
+            INVESTMENT_HORIZONS,
+            index=None,
+            horizontal=True,
+        )
+        loss_response = st.radio(
+            "5. 포트폴리오 가치가 30% 하락한다면 어떻게 대응할 가능성이 가장 높은가요?",
+            LOSS_RESPONSES,
+            index=None,
+        )
 
-    evidence_pdf = st.file_uploader(
-        "판단에 참고한 PDF (선택)",
-        type=["pdf"],
-        accept_multiple_files=False,
-        help=(
-            "10MB 이하의 PDF 1개를 첨부할 수 있습니다. "
-            "파일은 DB에 저장하지 않으며, AI 분석을 선택한 경우에만 "
-            "추출된 텍스트가 OpenAI API로 전송됩니다."
-        ),
-    )
-    if evidence_pdf is not None:
-        st.caption(f"첨부된 자료: {evidence_pdf.name}")
+        use_ai_analysis = st.checkbox(
+            "반대심문 답변 후 AI로 최종 논리 일관성을 분석합니다.",
+            value=False,
+            disabled=not bool(openai_api_key),
+            help=(
+                "선택하면 최초 투자 논리, 금융 데이터 요약, 반대심문 답변이 "
+                "최종 단계에서 OpenAI API로 전송됩니다. 매수·매도 추천은 생성하지 않습니다."
+            ),
+        )
+        if not openai_api_key:
+            st.caption("AI 분석을 사용하려면 OPENAI_API_KEY를 설정해주세요.")
 
-    st.subheader("판단 근거 점검")
-    thesis_factors = st.multiselect(
-        "1. 이 판단에서 중요하게 본 근거는 무엇인가요? (복수 선택 가능)",
-        THESIS_FACTORS,
-    )
-    decision_trigger = st.radio(
-        "2. 이 포트폴리오를 구성하게 된 가장 큰 계기는 무엇인가요?",
-        DECISION_TRIGGERS,
-        index=None,
-    )
-    evidence_level = st.radio(
-        "3. 판단하기 전에 어느 정도까지 자료를 확인했나요?",
-        EVIDENCE_LEVELS,
-        index=None,
-    )
-    investment_horizon = st.radio(
-        "4. 예상하는 투자 기간은 어느 정도인가요?",
-        INVESTMENT_HORIZONS,
-        index=None,
-        horizontal=True,
-    )
-    loss_response = st.radio(
-        "5. 포트폴리오 가치가 30% 하락한다면 어떻게 대응할 가능성이 가장 높은가요?",
-        LOSS_RESPONSES,
-        index=None,
-    )
+        criteria_submitted = st.form_submit_button(
+            "추가 질문 시작 →", use_container_width=True
+        )
 
-    use_ai_analysis = st.checkbox(
-        "반대심문 답변 후 AI로 최종 논리 일관성을 분석합니다.",
-        value=False,
-        disabled=not bool(openai_api_key),
-        help=(
-            "선택하면 최초 투자 논리, 금융 데이터 요약, 반대심문 답변이 "
-            "최종 단계에서 OpenAI API로 전송됩니다. 매수·매도 추천은 생성하지 않습니다."
-        ),
-    )
-    if not openai_api_key:
-        st.caption("AI 분석을 사용하려면 OPENAI_API_KEY를 설정해주세요.")
+    if criteria_submitted:
+        if not all(
+            [thesis_factors, decision_trigger, evidence_level, investment_horizon, loss_response]
+        ):
+            st.error("판단 근거 점검 문항에 모두 응답해주세요.")
+        else:
+            st.session_state["criteria_values"] = {
+                "thesis_factors": thesis_factors,
+                "decision_trigger": decision_trigger,
+                "evidence_level": evidence_level,
+                "investment_horizon": investment_horizon,
+                "loss_response": loss_response,
+                "use_ai_analysis": use_ai_analysis,
+            }
+            st.session_state["evidence_pdf"] = evidence_pdf
+            st.session_state["workflow_screen"] = "loading"
+            st.rerun()
+    st.stop()
 
-    submitted = st.form_submit_button("Check my thesis")
+if workflow_screen == "loading":
+    render_step_navigation("followup")
+    render_question_loading()
+    st.stop()
+
+render_step_navigation("followup")
+portfolio_input = st.session_state["portfolio_input"]
+thesis = st.session_state["portfolio_thesis"]
+evidence_pdf = st.session_state.get("evidence_pdf")
+criteria_values = st.session_state["criteria_values"]
+thesis_factors = criteria_values["thesis_factors"]
+decision_trigger = criteria_values["decision_trigger"]
+evidence_level = criteria_values["evidence_level"]
+investment_horizon = criteria_values["investment_horizon"]
+loss_response = criteria_values["loss_response"]
+use_ai_analysis = criteria_values["use_ai_analysis"]
+submitted = not st.session_state.get("analysis_processed", False)
 
 pdf_evidence = None
 pdf_error = None
@@ -470,6 +540,9 @@ if submitted:
                     "이 서비스는 포트폴리오 추천이나 목표 비중을 제공하지 않습니다."
                 )
 
+
+if submitted:
+    st.session_state["analysis_processed"] = True
 
 cross_examination = st.session_state.get("cross_examination")
 if cross_examination:
