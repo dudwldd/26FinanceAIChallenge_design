@@ -48,11 +48,11 @@ def scroll_to_top_on_screen_change(screen: str) -> None:
             if (top) top.scrollIntoView({ block: 'start', behavior: 'auto' });
         };
         scrollMainToTop();
-        const scrollReset = window.setInterval(scrollMainToTop, 50);
+        const scrollReset = window.setInterval(scrollMainToTop, 40);
         window.setTimeout(() => {
             scrollMainToTop();
             window.clearInterval(scrollReset);
-        }, 1600);
+        }, 280);
 
         const shield = window.parent.document.getElementById('workflow-transition-shield');
         if (shield && %REMOVE_SHIELD%) {
