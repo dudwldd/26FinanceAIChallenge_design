@@ -35,7 +35,7 @@ def apply_global_styles() -> None:
         }
 
         [data-testid="stMainBlockContainer"] {
-            max-width: 1020px;
+            max-width: 900px;
             padding-top: 0;
             padding-left: 0;
             padding-right: 0;
@@ -50,7 +50,7 @@ def apply_global_styles() -> None:
         }
 
         [data-testid="stMainBlockContainer"]:has(.app-shell-marker) {
-            max-width: 1020px !important;
+            max-width: 900px !important;
             padding-top: 0 !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
@@ -277,7 +277,7 @@ def apply_global_styles() -> None:
             width: 100vw;
             height: 70px;
             margin: 0 0 5rem -50vw;
-            padding: 0 max(1.5rem, calc((100vw - 1020px) / 2));
+            padding: 0 max(1.5rem, calc((100vw - 900px) / 2));
             box-sizing: border-box;
             border-bottom: 1px solid var(--court-line);
             background: rgba(255, 255, 255, 0.98);
@@ -517,6 +517,20 @@ def apply_global_styles() -> None:
         div[data-testid="stRadio"] [role="radiogroup"] > label p {
             color: #344054;
             font-size: 0.94rem;
+        }
+
+        .st-key-criteria_investment_horizon [role="radiogroup"] {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            gap: 0.65rem !important;
+            width: 100% !important;
+        }
+
+        .st-key-criteria_investment_horizon [role="radiogroup"] > label {
+            flex: 1 1 150px;
+            width: auto !important;
+            min-width: 150px;
         }
 
         div[data-testid="stVerticalBlock"]:has(
