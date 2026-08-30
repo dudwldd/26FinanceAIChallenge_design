@@ -540,6 +540,34 @@ if submitted:
 
             if data_error:
                 st.error(data_error)
+                st.caption(
+                    "디자인 작업 중이라면 실제 금융 데이터 없이 다음 화면을 확인할 수 있습니다."
+                )
+                if st.button(
+                    "디자인 미리보기로 다음 화면 이동 →",
+                    type="primary",
+                    key="continue_design_preview",
+                ):
+                    preview_questions = [
+                        "현재 포트폴리오에서 가장 확신하는 투자 근거는 무엇인가요?",
+                        "처음의 투자 판단을 바꿀 수 있는 반대 근거는 무엇인가요?",
+                        "시장 상황이 달라질 경우 어떤 기준으로 다시 판단하시겠어요?",
+                    ]
+                    st.session_state["cross_examination"] = {
+                        "original_thesis": thesis.strip(),
+                        "questions": preview_questions,
+                        "analysis_context": {"design_preview": True},
+                        "use_ai_analysis": False,
+                        "has_pdf": pdf_evidence is not None,
+                    }
+                    st.session_state.pop("final_cross_examination", None)
+                    for index in range(3):
+                        st.session_state.pop(
+                            f"cross_examination_answer_{index}", None
+                        )
+                    st.session_state["analysis_processed"] = True
+                    st.session_state["workflow_screen"] = "followup"
+                    st.rerun()
             else:
                 if pdf_evidence is not None:
                     st.subheader("첨부 근거자료")
