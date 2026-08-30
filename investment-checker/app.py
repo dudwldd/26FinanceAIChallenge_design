@@ -417,7 +417,7 @@ if workflow_screen == "criteria":
 
     use_ai_analysis = st.checkbox(
         "반대심문 답변 후 AI로 최종 논리 일관성을 분석합니다.",
-        value=False,
+        value=True,
         disabled=False,
         key="criteria_use_ai",
         help=(

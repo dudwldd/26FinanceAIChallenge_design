@@ -663,13 +663,13 @@ def apply_global_styles() -> None:
         }
 
         .analysis-loading h1 {
-            margin-top: 1.25rem !important;
-            font-size: 2.35rem !important;
+            margin: 1rem 0 0.55rem !important;
+            font-size: 2rem !important;
         }
 
         .loading-spinner {
-            width: 74px;
-            height: 74px;
+            width: 60px;
+            height: 60px;
             flex: 0 0 auto;
             margin: 0 auto;
             border: 5px solid #eef0ff;
@@ -683,13 +683,16 @@ def apply_global_styles() -> None:
         }
 
         .loading-lead {
+            margin: 0;
             color: #76849f;
+            font-size: 0.92rem;
+            line-height: 1.65;
         }
 
         .loading-card {
-            width: min(600px, calc(100vw - 3rem));
-            margin-top: 2.6rem;
-            padding: 1.4rem 1.7rem;
+            width: min(520px, calc(100vw - 3rem));
+            margin-top: 2rem;
+            padding: 1.2rem 1.45rem;
             border: 1px solid #dde2ed;
             border-radius: 18px;
             background: #ffffff;
@@ -701,7 +704,7 @@ def apply_global_styles() -> None:
             position: relative;
             display: grid;
             grid-template-columns: 38px 1fr;
-            min-height: 76px;
+            min-height: 64px;
             color: #a3adbf;
         }
 
@@ -735,12 +738,12 @@ def apply_global_styles() -> None:
         .loading-stage strong {
             display: block;
             padding-top: 0.25rem;
-            font-size: 0.98rem;
+            font-size: 0.92rem;
         }
 
         .loading-stage p {
             margin: 0.15rem 0 0;
-            font-size: 0.86rem;
+            font-size: 0.8rem;
         }
 
         .loading-stage.active,
