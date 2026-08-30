@@ -353,7 +353,7 @@ def apply_global_styles() -> None:
         }
 
         .criteria-hero {
-            margin: 2.5rem 0 3.5rem;
+            margin: 0.75rem 0 1.4rem;
         }
 
         .criteria-hero h1 {
@@ -381,8 +381,21 @@ def apply_global_styles() -> None:
             display: flex;
             align-items: center;
             gap: 0.85rem;
-            margin: 3rem 0 1.25rem;
+            margin: 2.25rem 0 1rem;
             color: #1f2a3d;
+        }
+
+        .criteria-question.first {
+            margin-top: 0.5rem;
+        }
+
+        .st-key-criteria_back button {
+            min-height: 44px;
+            color: #273449 !important;
+            border-color: #dbe3ee !important;
+            background: #ffffff !important;
+            font-size: 0.88rem !important;
+            font-weight: 500 !important;
         }
 
         .criteria-question span {
@@ -409,7 +422,7 @@ def apply_global_styles() -> None:
         div[data-testid="stButtonGroup"] [role="toolbar"] {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.75rem 0.9rem;
+            gap: 0.85rem 0.9rem !important;
         }
 
         div[data-testid="stButtonGroup"] button {
@@ -532,29 +545,65 @@ def apply_global_styles() -> None:
         [data-testid="stFileUploaderDropzone"] {
             position: relative;
             min-height: 260px;
-            border: 1px dashed #d7e0ec;
+            border: 1px dashed transparent;
             border-radius: 16px;
-            background: #ffffff;
+            background: transparent;
             cursor: pointer;
         }
 
-        div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
-        [data-testid="stFileUploaderDropzone"]::before {
-            content: "▱\\A PDF 파일 업로드\\A 최대 10MB · 텍스트 기반 PDF만 지원\\A 스캔·암호화·이미지 전용 PDF는 지원하지 않습니다.\\A\\A 업로드된 파일은 현재 분석에만 사용되며 저장되지 않습니다.";
-            position: absolute;
-            inset: 0;
+        .upload-visual {
+            position: relative;
+            z-index: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 1.5rem;
+            height: 260px;
+            margin-bottom: -260px;
+            padding: 1.25rem;
+            border: 1px dashed #d7e0ec;
+            border-radius: 16px;
+            background: #ffffff;
             color: #8fa0b7;
             font-family: "Noto Sans KR", sans-serif;
-            font-size: 0.84rem;
-            font-weight: 500;
-            line-height: 1.75;
             text-align: center;
-            white-space: pre-line;
             pointer-events: none;
+        }
+
+        .upload-icon {
+            display: grid;
+            width: 54px;
+            height: 54px;
+            margin-bottom: 0.65rem;
+            place-items: center;
+            border: 1px solid #dbe3ee;
+            border-radius: 14px;
+            background: #f9fbfd;
+            color: #90a4be;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .upload-visual strong {
+            color: #253247;
+            font-size: 0.98rem;
+            font-weight: 650;
+        }
+
+        .upload-visual p {
+            margin: 0.25rem 0 0.85rem;
+            color: #8fa0b7;
+            font-size: 0.82rem;
+            line-height: 1.55;
+        }
+
+        .upload-visual small {
+            padding: 0.45rem 0.8rem;
+            border: 1px solid #dce4ef;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #8fa0b7;
+            font-size: 0.76rem;
         }
 
         div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)

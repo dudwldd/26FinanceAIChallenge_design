@@ -263,7 +263,7 @@ if workflow_screen == "criteria":
     )
 
     st.markdown(
-        '<div class="criteria-question"><span>1</span>'
+        '<div class="criteria-question first"><span>1</span>'
         '<strong>이 판단에서 중요하게 본 근거는 무엇인가요? (복수 선택 가능)</strong></div>',
         unsafe_allow_html=True,
     )
@@ -328,6 +328,18 @@ if workflow_screen == "criteria":
             <div class="evidence-panel-heading">
                 <strong>참고한 자료 첨부</strong>
                 <p>투자 판단에 참고한 자료가 있다면 첨부해주세요. 텍스트 기반 PDF 파일 1개를 업로드할 수 있습니다.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            """
+            <div class="upload-visual">
+                <span class="upload-icon">▱</span>
+                <strong>PDF 파일 업로드</strong>
+                <p>최대 10MB · 텍스트 기반 PDF만 지원<br>
+                스캔·암호화·이미지 전용 PDF는 지원하지 않습니다.</p>
+                <small>업로드된 파일은 현재 분석에만 사용되며 저장되지 않습니다.</small>
             </div>
             """,
             unsafe_allow_html=True,
