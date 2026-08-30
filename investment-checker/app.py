@@ -127,8 +127,15 @@ workflow_screen = st.session_state["workflow_screen"]
 
 if workflow_screen == "portfolio":
     render_step_navigation("portfolio")
-    st.title("Portfolio Thesis Checker")
-    st.caption("포트폴리오를 추천하지 않고, 입력한 구성과 투자 논리를 점검합니다.")
+    st.markdown(
+        """
+        <section class="page-hero">
+            <h1>Portfolio Thesis Checker</h1>
+            <p>포트폴리오를 추천하지 않고, 입력한 구성과 투자 논리를 점검합니다.</p>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
     if "portfolio_rows" not in st.session_state:
         st.session_state["portfolio_rows"] = [
             {"id": 1, "ticker": "AAPL", "weight": 40.0},
@@ -143,6 +150,7 @@ if workflow_screen == "portfolio":
         ticker_header, weight_header, _ = st.columns([6, 1.55, 0.48], gap="small")
         ticker_header.markdown('<div class="portfolio-column-label">TICKER</div>', unsafe_allow_html=True)
         weight_header.markdown('<div class="portfolio-column-label right">비중 (%)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="portfolio-header-gap"></div>', unsafe_allow_html=True)
 
         remove_row_id = None
         for row in rows:

@@ -34,11 +34,18 @@ def apply_global_styles() -> None:
         }
 
         [data-testid="stMainBlockContainer"] {
+            max-width: 1020px;
+            padding-top: 0;
+            padding-left: 0;
+            padding-right: 0;
+            padding-bottom: 6rem;
+        }
+
+        [data-testid="stMainBlockContainer"]:has(.login-shell) {
             max-width: 1280px;
             padding-top: 2.75rem;
             padding-left: 2.75rem;
             padding-right: 2.75rem;
-            padding-bottom: 6rem;
         }
 
         h1, h2, h3 {
@@ -47,7 +54,7 @@ def apply_global_styles() -> None:
         }
 
         h1 {
-            font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+            font-family: "Playfair Display", Georgia, "Times New Roman", serif !important;
             font-size: clamp(2.25rem, 5vw, 3.45rem) !important;
             line-height: 1.08 !important;
             font-weight: 500 !important;
@@ -254,21 +261,42 @@ def apply_global_styles() -> None:
         }
 
         .workflow-nav {
+            position: relative;
+            left: 50%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: -1.25rem 0 3.5rem;
-            padding-bottom: 1rem;
+            width: 100vw;
+            height: 70px;
+            margin: 0 0 5rem -50vw;
+            padding: 0 max(1.5rem, calc((100vw - 1020px) / 2));
+            box-sizing: border-box;
             border-bottom: 1px solid var(--court-line);
-            font-family: Georgia, "Times New Roman", serif;
+            background: rgba(255, 255, 255, 0.98);
+            font-family: "Playfair Display", Georgia, "Times New Roman", serif;
         }
 
         .workflow-steps {
             display: flex;
-            gap: 1.5rem;
+            gap: 0.7rem;
             color: #a0a4ac;
             font-family: sans-serif;
             font-size: 0.78rem;
+        }
+
+        .workflow-step {
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .workflow-step:not(:last-child)::after {
+            content: "";
+            display: inline-block;
+            width: 24px;
+            height: 1px;
+            margin-left: 0.7rem;
+            background: #dce3ed;
         }
 
         .workflow-step span {
@@ -292,6 +320,28 @@ def apply_global_styles() -> None:
 
         .workflow-step.is-complete span {
             background: var(--court-mint);
+        }
+
+        .page-hero {
+            margin: 0 0 3.7rem;
+        }
+
+        .page-hero h1 {
+            margin: 0 0 0.7rem !important;
+            padding: 0 !important;
+            color: #0f172a;
+            font-family: "Playfair Display", Georgia, "Times New Roman", serif !important;
+            font-size: clamp(2.8rem, 4vw, 3.4rem) !important;
+            font-weight: 600 !important;
+            line-height: 1.12 !important;
+            letter-spacing: -0.035em;
+        }
+
+        .page-hero p {
+            margin: 0;
+            color: #71829b;
+            font-size: 1rem;
+            line-height: 1.55;
         }
 
         .analysis-loading {
@@ -434,6 +484,10 @@ def apply_global_styles() -> None:
             letter-spacing: 0.04em;
         }
 
+        .portfolio-header-gap {
+            height: 0.8rem;
+        }
+
         .portfolio-column-label.right {
             text-align: right;
         }
@@ -496,6 +550,10 @@ def apply_global_styles() -> None:
 
         @media (max-width: 720px) {
             [data-testid="stMainBlockContainer"] {
+                padding: 0 1rem 4rem;
+            }
+
+            [data-testid="stMainBlockContainer"]:has(.login-shell) {
                 padding: 2rem 1rem 4rem;
             }
 
@@ -528,6 +586,10 @@ def apply_global_styles() -> None:
 
             .workflow-nav {
                 gap: 1rem;
+                height: auto;
+                margin-bottom: 3rem;
+                padding-top: 1rem;
+                padding-bottom: 1rem;
             }
 
             .workflow-steps {
