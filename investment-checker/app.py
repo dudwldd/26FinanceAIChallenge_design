@@ -473,6 +473,16 @@ evidence_level = criteria_values["evidence_level"]
 investment_horizon = criteria_values["investment_horizon"]
 loss_response = criteria_values["loss_response"]
 use_ai_analysis = criteria_values["use_ai_analysis"]
+
+# Earlier failed data requests may have marked the analysis as processed without
+# creating the next-screen content. Recover those sessions so the preview button
+# is rendered instead of leaving a blank page.
+if (
+    st.session_state.get("analysis_processed", False)
+    and not st.session_state.get("cross_examination")
+):
+    st.session_state["analysis_processed"] = False
+
 submitted = not st.session_state.get("analysis_processed", False)
 
 pdf_evidence = None
@@ -768,7 +778,7 @@ if submitted:
                 )
 
 
-if submitted:
+if submitted and st.session_state.get("cross_examination"):
     st.session_state["analysis_processed"] = True
 
 cross_examination = st.session_state.get("cross_examination")
