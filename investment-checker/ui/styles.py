@@ -274,6 +274,7 @@ def apply_global_styles() -> None:
 
         .workflow-nav {
             position: relative;
+            z-index: 110;
             left: 50%;
             display: flex;
             align-items: center;
@@ -639,13 +640,26 @@ def apply_global_styles() -> None:
         }
 
         .analysis-loading {
+            position: fixed;
+            z-index: 100;
+            inset: 70px 0 0;
             display: flex;
             flex-direction: column;
+            align-items: center;
             justify-content: center;
-            max-width: 620px;
-            min-height: calc(100vh - 140px);
-            margin: 0 auto;
+            width: 100%;
+            max-width: none;
+            height: calc(100vh - 70px);
+            margin: 0;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            overflow: hidden;
+            background: #ffffff;
             text-align: center;
+        }
+
+        [data-testid="stMain"]:has(.analysis-loading) {
+            overflow: hidden;
         }
 
         .analysis-loading h1 {
@@ -656,7 +670,8 @@ def apply_global_styles() -> None:
         .loading-spinner {
             width: 74px;
             height: 74px;
-            margin: auto;
+            flex: 0 0 auto;
+            margin: 0 auto;
             border: 5px solid #eef0ff;
             border-top-color: #646cff;
             border-radius: 50%;
@@ -672,6 +687,7 @@ def apply_global_styles() -> None:
         }
 
         .loading-card {
+            width: min(600px, calc(100vw - 3rem));
             margin-top: 2.6rem;
             padding: 1.4rem 1.7rem;
             border: 1px solid #dde2ed;
