@@ -303,6 +303,7 @@ if workflow_screen == "criteria":
         index=None,
         key="criteria_decision_trigger",
         label_visibility="collapsed",
+        width="stretch",
     )
 
     st.markdown(
@@ -316,6 +317,7 @@ if workflow_screen == "criteria":
         index=None,
         key="criteria_evidence_level",
         label_visibility="collapsed",
+        width="stretch",
     )
 
     with st.container(border=True):
@@ -324,6 +326,18 @@ if workflow_screen == "criteria":
             <div class="evidence-panel-heading">
                 <strong>참고한 자료 첨부</strong>
                 <p>투자 판단에 참고한 자료가 있다면 첨부해주세요. 텍스트 기반 PDF 파일 1개를 업로드할 수 있습니다.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            """
+            <div class="upload-copy">
+                <span>▱</span>
+                <strong>PDF 파일 업로드</strong>
+                <p>최대 10MB · 텍스트 기반 PDF만 지원<br>
+                스캔·암호화·이미지 전용 PDF는 지원하지 않습니다.</p>
+                <small>업로드된 파일은 현재 분석에만 사용되며 저장되지 않습니다.</small>
             </div>
             """,
             unsafe_allow_html=True,
@@ -338,6 +352,7 @@ if workflow_screen == "criteria":
                 "파일은 DB에 저장하지 않으며, AI 분석을 선택한 경우에만 "
                 "추출된 텍스트가 OpenAI API로 전송됩니다."
             ),
+            label_visibility="collapsed",
         )
         if evidence_pdf is not None:
             st.caption(f"첨부된 자료: {evidence_pdf.name}")
@@ -387,6 +402,7 @@ if workflow_screen == "criteria":
         index=None,
         key="criteria_loss_response",
         label_visibility="collapsed",
+        width="stretch",
     )
 
     use_ai_analysis = st.checkbox(

@@ -26,6 +26,7 @@ def apply_global_styles() -> None:
             background: #ffffff;
             color: var(--court-ink);
             font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+            overflow-x: hidden;
         }
 
         [data-testid="stHeader"] {
@@ -394,11 +395,11 @@ def apply_global_styles() -> None:
             font-weight: 500;
         }
 
-        div[data-testid="stPills"] {
+        div[data-testid="stButtonGroup"] {
             margin-bottom: 0.9rem;
         }
 
-        div[data-testid="stPills"] button {
+        div[data-testid="stButtonGroup"] button {
             min-height: 46px;
             padding: 0.65rem 1.25rem;
             border: 1px solid #d9e1ec;
@@ -411,14 +412,14 @@ def apply_global_styles() -> None:
                 background 140ms ease, transform 140ms ease;
         }
 
-        div[data-testid="stPills"] button:hover {
+        div[data-testid="stButtonGroup"] button:hover {
             border-color: var(--court-coral);
             background: #fff7f6;
             color: var(--court-coral);
             transform: translateY(-1px);
         }
 
-        div[data-testid="stPills"] button[aria-pressed="true"] {
+        div[data-testid="stButtonGroup"] button[aria-pressed="true"] {
             border-color: var(--court-coral);
             background: #fff1ef;
             color: var(--court-coral);
@@ -512,6 +513,47 @@ def apply_global_styles() -> None:
             margin: 0.35rem 0 1.1rem;
             color: #8fa0b7;
             font-size: 0.86rem;
+        }
+
+        .upload-copy {
+            margin-bottom: 0.8rem;
+            padding: 1.4rem 1rem 0.4rem;
+            color: #8fa0b7;
+            text-align: center;
+        }
+
+        .upload-copy > span {
+            display: grid;
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 0.65rem;
+            place-items: center;
+            border: 1px solid #d9e2ed;
+            border-radius: 14px;
+            color: #8fa3bd;
+            font-size: 1.5rem;
+        }
+
+        .upload-copy strong {
+            display: block;
+            color: #273449;
+            font-size: 0.98rem;
+            font-weight: 600;
+        }
+
+        .upload-copy p {
+            margin: 0.25rem 0 0.9rem;
+            font-size: 0.82rem;
+            line-height: 1.55;
+        }
+
+        .upload-copy small {
+            display: inline-block;
+            padding: 0.45rem 0.8rem;
+            border: 1px solid #dce4ef;
+            border-radius: 999px;
+            background: #ffffff;
+            font-size: 0.76rem;
         }
 
         div[data-testid="stVerticalBlock"]:has(.evidence-panel-heading)
