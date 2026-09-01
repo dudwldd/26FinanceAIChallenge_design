@@ -766,20 +766,26 @@ def apply_global_styles() -> None:
         }
 
         .followup-hero {
-            display: grid;
-            grid-template-columns: 62px 1fr;
-            align-items: center;
             margin: 0 0 1.35rem;
             font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
         }
 
+        .followup-progress-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
         .followup-progress-copy {
+            flex: 0 0 auto;
             color: #91a0b6;
             font-size: 0.72rem;
             font-weight: 600;
         }
 
         .followup-progress {
+            flex: 1 1 auto;
             height: 3px;
             overflow: hidden;
             border-radius: 999px;
@@ -795,18 +801,19 @@ def apply_global_styles() -> None:
         }
 
         .followup-hero h1 {
-            grid-column: 1 / -1;
-            margin: 1.4rem 0 0.65rem !important;
+            display: block;
+            width: 100%;
+            margin: 1.25rem 0 0.55rem !important;
             color: #111827;
             font-family: "Noto Serif KR", "Batang", serif !important;
             font-size: 2rem !important;
             font-weight: 500 !important;
             line-height: 1.25 !important;
             letter-spacing: -0.045em;
+            white-space: nowrap;
         }
 
         .followup-hero p {
-            grid-column: 1 / -1;
             margin: 0;
             color: #71829b;
             font-size: 0.86rem;

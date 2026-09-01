@@ -61,7 +61,10 @@ def scroll_to_top_on_screen_change(screen: str) -> None:
         </script>
         """
         .replace("%WORKFLOW_SCREEN%", screen)
-        .replace("%REMOVE_SHIELD%", "true" if screen != "loading" else "false"),
+        .replace(
+            "%REMOVE_SHIELD%",
+            "true" if screen not in {"loading", "analysis"} else "false",
+        ),
         height=0,
         width=0,
     )
