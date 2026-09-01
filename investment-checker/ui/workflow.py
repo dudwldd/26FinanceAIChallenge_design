@@ -97,6 +97,24 @@ def _keep_loading_background_covered() -> None:
     )
 
 
+def _preserve_loading_screen_during_analysis() -> None:
+    """Clone the final loading view so it survives the analysis rerun."""
+    components.html(
+        """
+        <script>
+        const doc = window.parent.document;
+        const shield = doc.getElementById('workflow-transition-shield');
+        const loading = doc.querySelector('.analysis-loading');
+        if (shield && loading && !shield.querySelector('.analysis-loading')) {
+            shield.appendChild(loading.cloneNode(true));
+        }
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+
+
 def render_step_navigation(active_step: str) -> None:
     """Render the compact four-step navigation used after login."""
     active_index = next(
@@ -160,6 +178,7 @@ def render_question_loading() -> None:
         )
         time.sleep(0.9)
     placeholder.markdown(_loading_markup(3), unsafe_allow_html=True)
+    _preserve_loading_screen_during_analysis()
     time.sleep(0.55)
     st.session_state["workflow_screen"] = "analysis"
     st.session_state["analysis_processed"] = False

@@ -886,12 +886,6 @@ if cross_examination:
     final_cross_examination = st.session_state.get("final_cross_examination")
     if final_cross_examination:
         st.header("최종 진단")
-        st.success("반대심문 답변이 모두 제출되었습니다.")
-
-        st.markdown("#### 질문별 보완 답변")
-        for record in final_cross_examination["answers"]:
-            with st.expander(str(record["question"]), expanded=True):
-                st.write(str(record["answer"]))
 
         ai_error = final_cross_examination.get("ai_error")
         ai_analysis = final_cross_examination.get("ai_analysis")
