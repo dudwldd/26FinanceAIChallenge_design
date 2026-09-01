@@ -11,6 +11,7 @@ from data.financial_data import (
     FinancialDataError,
     get_financial_data,
     get_historical_prices,
+    ticker_exists,
 )
 from data.pdf_evidence import PDFEvidenceError, extract_pdf_evidence
 from logic.portfolio import (
@@ -24,11 +25,7 @@ from logic.portfolio import (
     generate_portfolio_questions,
     validate_portfolio,
 )
-from logic.cross_examination import (
-    CrossExaminationError,
-    select_cross_examination_questions,
-    validate_cross_examination_answers,
-)
+from logic.cross_examination import select_cross_examination_questions
 from logic.thesis_standards import evaluate_thesis_standards
 from ui.login import render_login
 from ui.styles import apply_global_styles
@@ -112,6 +109,12 @@ def get_cached_financial_data(ticker: str) -> dict[str, object]:
 def get_cached_historical_prices(tickers: tuple[str, ...]) -> pd.DataFrame:
     """Cache price history briefly for faster repeated thesis checks."""
     return get_historical_prices(list(tickers))
+
+
+@st.cache_data(ttl=900, show_spinner=False)
+def get_cached_ticker_exists(ticker: str) -> bool:
+    """Cache ticker validation so the input step stays responsive."""
+    return ticker_exists(ticker)
 
 
 st.set_page_config(
@@ -242,11 +245,23 @@ if workflow_screen == "portfolio":
             [{"ticker": row["ticker"], "weight": row["weight"]} for row in rows]
         )
         try:
-            validate_portfolio(portfolio_input.to_dict("records"))
+            validated_holdings = validate_portfolio(portfolio_input.to_dict("records"))
         except PortfolioValidationError as exc:
             st.error(str(exc))
         else:
-            if not thesis.strip():
+            with st.spinner("ticker를 확인하는 중입니다..."):
+                invalid_tickers = [
+                    str(holding["ticker"])
+                    for holding in validated_holdings
+                    if not get_cached_ticker_exists(str(holding["ticker"]))
+                ]
+            if invalid_tickers:
+                st.error(
+                    "해당 ticker를 찾을 수 없습니다: "
+                    + ", ".join(invalid_tickers)
+                    + ". ticker를 확인해주세요."
+                )
+            elif not thesis.strip():
                 st.error("포트폴리오 구성 논리를 입력해주세요.")
             else:
                 st.session_state["portfolio_input"] = portfolio_input
@@ -462,7 +477,7 @@ if workflow_screen == "loading":
     render_question_loading()
     st.stop()
 
-render_step_navigation("followup")
+render_step_navigation("result" if workflow_screen == "result" else "followup")
 portfolio_input = st.session_state["portfolio_input"]
 thesis = st.session_state["portfolio_thesis"]
 evidence_pdf = st.session_state.get("evidence_pdf")
@@ -576,6 +591,8 @@ if submitted:
                             f"cross_examination_answer_{index}", None
                         )
                     st.session_state["analysis_processed"] = True
+                    st.session_state["cross_examination_index"] = 0
+                    st.session_state["cross_examination_draft_answers"] = {}
                     st.session_state["workflow_screen"] = "followup"
                     st.rerun()
             else:
@@ -780,34 +797,75 @@ if submitted:
 
 if submitted and st.session_state.get("cross_examination"):
     st.session_state["analysis_processed"] = True
+    if workflow_screen == "analysis":
+        st.session_state["cross_examination_index"] = 0
+        st.session_state["cross_examination_draft_answers"] = {}
+        st.session_state["workflow_screen"] = "followup_0"
+        st.rerun()
 
 cross_examination = st.session_state.get("cross_examination")
-if cross_examination:
-    st.divider()
-    st.header("2단계: 반대심문 답변")
-    st.write(
-        "1차 분석에서 발견된 쟁점에 답해주세요. 답변은 새로운 추천을 받기 위한 "
-        "것이 아니라, 최초 논리를 보완하거나 수정할 수 있는지 확인하는 데 사용됩니다."
+if cross_examination and not st.session_state.get("final_cross_examination"):
+    questions = list(cross_examination["questions"])
+    question_count = len(questions)
+    current_index = min(
+        int(st.session_state.get("cross_examination_index", 0)),
+        question_count - 1,
+    )
+    drafts = st.session_state.setdefault("cross_examination_draft_answers", {})
+    progress = ((current_index + 1) / question_count) * 100
+
+    st.markdown(
+        f"""
+        <section class="followup-hero">
+            <div class="followup-progress-copy">질문 {current_index + 1} / {question_count}</div>
+            <div class="followup-progress"><span style="width:{progress:.2f}%"></span></div>
+            <h1>추가 점검 질문</h1>
+            <p>입력한 포트폴리오와 실제 데이터를 바탕으로 추가로 확인하면 좋은 질문을 만들었습니다.</p>
+        </section>
+        <div class="followup-risk-chip">ⓘ 포트폴리오 집중도와 투자 근거 점검</div>
+        <div class="followup-question-card">{questions[current_index]}</div>
+        <div class="followup-answer-label"><strong>답변</strong> <span>(선택사항)</span></div>
+        """,
+        unsafe_allow_html=True,
+    )
+    answer = st.text_area(
+        "추가 질문 답변",
+        value=str(drafts.get(str(current_index), "")),
+        placeholder="판단 근거와 대응 계획을 자유롭게 작성해주세요.",
+        height=160,
+        key=f"cross_examination_answer_{current_index}",
+        label_visibility="collapsed",
     )
 
-    with st.form("cross_examination_form"):
-        follow_up_answers = [
-            st.text_area(
-                f"질문 {index + 1}. {question}",
-                key=f"cross_examination_answer_{index}",
-            )
-            for index, question in enumerate(cross_examination["questions"])
-        ]
-        final_submitted = st.form_submit_button("최종 진단 보기")
+    skip_column, spacer_column, next_column = st.columns([1, 4, 1.45])
+    skip_clicked = skip_column.button(
+        "건너뛰기",
+        key=f"followup_skip_{current_index}",
+    )
+    next_label = "진단 결과 보기 →" if current_index == question_count - 1 else "다음 질문 →"
+    next_clicked = next_column.button(
+        next_label,
+        type="primary",
+        use_container_width=True,
+        key=f"followup_next_{current_index}",
+    )
 
-    if final_submitted:
-        try:
-            answer_records = validate_cross_examination_answers(
-                cross_examination["questions"], follow_up_answers
-            )
-        except CrossExaminationError as exc:
-            st.error(str(exc))
+    if skip_clicked or next_clicked:
+        drafts[str(current_index)] = "" if skip_clicked else answer.strip()
+        st.session_state["cross_examination_draft_answers"] = drafts
+        if current_index < question_count - 1:
+            next_index = current_index + 1
+            st.session_state["cross_examination_index"] = next_index
+            st.session_state["workflow_screen"] = f"followup_{next_index}"
+            st.rerun()
         else:
+            answer_records = [
+                {
+                    "question": question,
+                    "answer": str(drafts.get(str(index), "")).strip() or "답변하지 않음",
+                }
+                for index, question in enumerate(questions)
+            ]
             final_result: dict[str, object] = {"answers": answer_records}
             if cross_examination["use_ai_analysis"]:
                 final_context = dict(cross_examination["analysis_context"])
@@ -830,7 +888,10 @@ if cross_examination:
                 except AIAnalysisError as exc:
                     final_result["ai_error"] = str(exc)
             st.session_state["final_cross_examination"] = final_result
+            st.session_state["workflow_screen"] = "result"
+            st.rerun()
 
+if cross_examination:
     final_cross_examination = st.session_state.get("final_cross_examination")
     if final_cross_examination:
         st.header("최종 진단")

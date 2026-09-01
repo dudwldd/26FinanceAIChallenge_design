@@ -761,6 +761,122 @@ def apply_global_styles() -> None:
             background: #646cff;
         }
 
+        [data-testid="stMainBlockContainer"]:has(.followup-hero) .workflow-nav {
+            margin-bottom: 1.8rem;
+        }
+
+        .followup-hero {
+            display: grid;
+            grid-template-columns: 62px 1fr;
+            align-items: center;
+            margin: 0 0 1.35rem;
+            font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+        }
+
+        .followup-progress-copy {
+            color: #91a0b6;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .followup-progress {
+            height: 3px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #dfe6ef;
+        }
+
+        .followup-progress span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: var(--court-coral);
+            transition: width 180ms ease;
+        }
+
+        .followup-hero h1 {
+            grid-column: 1 / -1;
+            margin: 1.4rem 0 0.65rem !important;
+            color: #111827;
+            font-family: "Noto Serif KR", "Batang", serif !important;
+            font-size: 2rem !important;
+            font-weight: 500 !important;
+            line-height: 1.25 !important;
+            letter-spacing: -0.045em;
+        }
+
+        .followup-hero p {
+            grid-column: 1 / -1;
+            margin: 0;
+            color: #71829b;
+            font-size: 0.86rem;
+            line-height: 1.6;
+        }
+
+        .followup-risk-chip {
+            display: inline-flex;
+            width: fit-content;
+            margin: 0 0 1rem;
+            padding: 0.45rem 0.7rem;
+            border: 1px solid #f5bf5b;
+            border-radius: 9px;
+            background: #fffaf0;
+            color: #ad6800;
+            font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+
+        .followup-question-card {
+            margin-bottom: 1.35rem;
+            padding: 1.35rem 1.55rem;
+            border: 1px solid #dce4ef;
+            border-radius: 17px;
+            background: #ffffff;
+            color: #253247;
+            font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+            font-size: 0.94rem;
+            line-height: 1.8;
+            box-shadow: 0 3px 10px rgba(43, 59, 82, 0.025);
+        }
+
+        .followup-answer-label {
+            margin-bottom: 0.45rem;
+            color: #344054;
+            font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+            font-size: 0.82rem;
+        }
+
+        .followup-answer-label span {
+            color: #91a0b6;
+        }
+
+        div[class*="st-key-cross_examination_answer_"] textarea {
+            min-height: 160px;
+            border-color: #dce4ef !important;
+            border-radius: 14px !important;
+            background: #ffffff !important;
+            color: #344054 !important;
+            font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif !important;
+            font-size: 0.88rem !important;
+        }
+
+        div[class*="st-key-followup_skip_"] button {
+            justify-content: flex-start;
+            padding-left: 0;
+            color: #91a0b6;
+            border-color: transparent;
+            background: transparent;
+            text-decoration: underline;
+            box-shadow: none;
+        }
+
+        div[class*="st-key-followup_skip_"] button:hover {
+            color: #667085;
+            border-color: transparent;
+            background: transparent;
+        }
+
         div[data-testid="stVerticalBlock"]:has(
             > div[data-testid="stElementContainer"] .portfolio-card-title
         ) {
