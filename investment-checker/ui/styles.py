@@ -777,7 +777,7 @@ def apply_global_styles() -> None:
         }
 
         .result-analysis-loading {
-            transform: translateY(44px);
+            transform: translateY(38px);
         }
 
         .result-analysis-loading .loading-card {
