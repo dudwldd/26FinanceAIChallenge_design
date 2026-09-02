@@ -56,14 +56,21 @@ def scroll_to_top_on_screen_change(screen: str) -> None:
 
         const shield = window.parent.document.getElementById('workflow-transition-shield');
         if (shield && %REMOVE_SHIELD%) {
-            window.setTimeout(() => shield.remove(), 300);
+            window.setTimeout(() => {
+                shield.remove();
+                const main = window.parent.document.querySelector('[data-testid="stMain"]');
+                if (main) main.style.removeProperty('overflow');
+            }, 300);
         }
         </script>
         """
         .replace("%WORKFLOW_SCREEN%", screen)
         .replace(
             "%REMOVE_SHIELD%",
-            "true" if screen not in {"loading", "analysis"} else "false",
+            "true"
+            if screen
+            not in {"loading", "analysis", "result_loading", "finalize_result"}
+            else "false",
         ),
         height=0,
         width=0,
@@ -107,6 +114,8 @@ def _preserve_loading_screen_during_analysis() -> None:
         const loading = doc.querySelector('.analysis-loading');
         if (shield && loading && !shield.querySelector('.analysis-loading')) {
             shield.appendChild(loading.cloneNode(true));
+            const main = doc.querySelector('[data-testid="stMain"]');
+            if (main) main.style.overflow = 'hidden';
         }
         </script>
         """,
@@ -167,6 +176,38 @@ def _loading_markup(active_index: int) -> str:
     )
 
 
+def _result_loading_markup(completed_count: int) -> str:
+    stages = [
+        ("투자 논리 구조 검토", "입력한 논리의 일관성과 근거를 파악합니다"),
+        ("재무·시장 데이터 조회", "각 종목의 재무지표와 시장 데이터를 불러옵니다"),
+        ("집중도 및 상관관계 측정", "섹터 집중도와 종목 간 상관관계를 분석합니다"),
+        ("행동편향 점검", "확증편향 등 인지적 왜곡 패턴을 탐지합니다"),
+        ("진단 결과 준비", "분석 결과를 정리하고 진단 보고서를 생성합니다"),
+    ]
+    rows = []
+    for index, (title, description) in enumerate(stages):
+        if index < completed_count:
+            state, symbol = "complete", "✓"
+        elif index == completed_count:
+            state, symbol = "active", "↻"
+        else:
+            state, symbol = "pending", "•"
+        rows.append(
+            f'<div class="loading-stage {state}">'
+            f'<div class="loading-node">{symbol}</div>'
+            f'<div><strong>{title}</strong><p>{description}</p></div>'
+            '</div>'
+        )
+    return (
+        '<section class="analysis-loading result-analysis-loading">'
+        '<div class="loading-spinner"></div>'
+        '<h1>투자 논리 분석 중</h1>'
+        '<p class="loading-lead">입력한 판단 근거와 실제 데이터의 정합성을 확인하고 있습니다.</p>'
+        f'<div class="loading-card">{"".join(rows)}</div>'
+        '</section>'
+    )
+
+
 def render_question_loading() -> None:
     """Show a short staged transition, then advance to analysis."""
     _keep_loading_background_covered()
@@ -182,4 +223,21 @@ def render_question_loading() -> None:
     time.sleep(0.55)
     st.session_state["workflow_screen"] = "analysis"
     st.session_state["analysis_processed"] = False
+    st.rerun()
+
+
+def render_result_loading() -> None:
+    """Complete five visible stages before final-result processing."""
+    _keep_loading_background_covered()
+    placeholder = st.empty()
+    for completed_count in range(5):
+        placeholder.markdown(
+            _result_loading_markup(completed_count),
+            unsafe_allow_html=True,
+        )
+        time.sleep(0.7)
+    placeholder.markdown(_result_loading_markup(5), unsafe_allow_html=True)
+    _preserve_loading_screen_during_analysis()
+    time.sleep(0.45)
+    st.session_state["workflow_screen"] = "finalize_result"
     st.rerun()
