@@ -63,7 +63,10 @@ def scroll_to_top_on_screen_change(screen: str) -> None:
         .replace("%WORKFLOW_SCREEN%", screen)
         .replace(
             "%REMOVE_SHIELD%",
-            "true" if screen not in {"loading", "analysis"} else "false",
+            "true"
+            if screen
+            not in {"loading", "analysis", "result_loading", "finalize_result"}
+            else "false",
         ),
         height=0,
         width=0,
@@ -167,19 +170,50 @@ def _loading_markup(active_index: int) -> str:
     )
 
 
+def _result_loading_markup() -> str:
+    stages = [
+        ("투자 논리 구조 검토", "입력한 논리의 일관성과 근거를 파악합니다", "complete", "✓"),
+        ("재무·시장 데이터 조회", "각 종목의 재무지표와 시장 데이터를 불러옵니다", "active", "↻"),
+        ("집중도 및 상관관계 측정", "섹터 집중도와 종목 간 상관관계를 분석합니다", "pending", "•"),
+        ("행동편향 점검", "확증편향 등 인지적 왜곡 패턴을 탐지합니다", "pending", "•"),
+        ("진단 결과 준비", "분석 결과를 정리하고 진단 보고서를 생성합니다", "pending", "•"),
+    ]
+    rows = "".join(
+        f'<div class="loading-stage {state}">'
+        f'<div class="loading-node">{symbol}</div>'
+        f'<div><strong>{title}</strong><p>{description}</p></div>'
+        '</div>'
+        for title, description, state, symbol in stages
+    )
+    return (
+        '<section class="analysis-loading result-analysis-loading">'
+        '<div class="loading-spinner"></div>'
+        '<h1>투자 논리 분석 중</h1>'
+        '<p class="loading-lead">입력한 판단 근거와 실제 데이터의 정합성을 확인하고 있습니다.</p>'
+        f'<div class="loading-card">{rows}</div>'
+        '</section>'
+    )
+
+
 def render_question_loading() -> None:
     """Show a short staged transition, then advance to analysis."""
     _keep_loading_background_covered()
     placeholder = st.empty()
-    for active_index in range(3):
-        placeholder.markdown(
-            _loading_markup(active_index),
-            unsafe_allow_html=True,
-        )
-        time.sleep(0.9)
-    placeholder.markdown(_loading_markup(3), unsafe_allow_html=True)
+    placeholder.markdown(_loading_markup(1), unsafe_allow_html=True)
+    time.sleep(3.1)
     _preserve_loading_screen_during_analysis()
-    time.sleep(0.55)
+    time.sleep(0.15)
     st.session_state["workflow_screen"] = "analysis"
     st.session_state["analysis_processed"] = False
+    st.rerun()
+
+
+def render_result_loading() -> None:
+    """Hold a stable result-analysis screen before final processing."""
+    _keep_loading_background_covered()
+    st.markdown(_result_loading_markup(), unsafe_allow_html=True)
+    time.sleep(3.1)
+    _preserve_loading_screen_during_analysis()
+    time.sleep(0.15)
+    st.session_state["workflow_screen"] = "finalize_result"
     st.rerun()
