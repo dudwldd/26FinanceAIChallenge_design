@@ -660,7 +660,12 @@ def apply_global_styles() -> None:
         }
 
         [data-testid="stMain"]:has(.analysis-loading) {
-            overflow: hidden;
+            overflow-y: scroll !important;
+            scrollbar-gutter: stable;
+        }
+
+        [data-testid="stMain"] {
+            scrollbar-gutter: stable;
         }
 
         .analysis-loading h1 {
@@ -805,11 +810,15 @@ def apply_global_styles() -> None:
         }
 
         [data-testid="stMainBlockContainer"]:has(.followup-hero) .workflow-nav {
-            margin-bottom: 1.8rem;
+            margin-bottom: 1.3rem;
+        }
+
+        [data-testid="stMainBlockContainer"]:has(.followup-hero) {
+            max-width: 620px !important;
         }
 
         .followup-hero {
-            margin: 0 0 1.35rem;
+            margin: 0 0 1.15rem;
             font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
         }
 
@@ -846,7 +855,7 @@ def apply_global_styles() -> None:
         .followup-hero h1 {
             display: block;
             width: 100%;
-            margin: 1.25rem 0 0.55rem !important;
+            margin: 1.1rem 0 0.5rem !important;
             color: #111827;
             font-family: "Noto Serif KR", "Batang", serif !important;
             font-size: 2rem !important;
@@ -866,7 +875,7 @@ def apply_global_styles() -> None:
         .followup-risk-chip {
             display: inline-flex;
             width: fit-content;
-            margin: 0 0 1rem;
+            margin: 0 0 0.9rem;
             padding: 0.45rem 0.7rem;
             border: 1px solid #f5bf5b;
             border-radius: 9px;
@@ -878,8 +887,8 @@ def apply_global_styles() -> None:
         }
 
         .followup-question-card {
-            margin-bottom: 1.35rem;
-            padding: 1.35rem 1.55rem;
+            margin-bottom: 1.05rem;
+            padding: 1.15rem 1.35rem;
             border: 1px solid #dce4ef;
             border-radius: 17px;
             background: #ffffff;
@@ -902,7 +911,7 @@ def apply_global_styles() -> None:
         }
 
         div[class*="st-key-cross_examination_answer_"] textarea {
-            min-height: 160px;
+            min-height: 140px;
             border-color: #dce4ef !important;
             border-radius: 14px !important;
             background: #ffffff !important;

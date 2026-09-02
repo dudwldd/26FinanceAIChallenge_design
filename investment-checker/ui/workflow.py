@@ -59,7 +59,10 @@ def scroll_to_top_on_screen_change(screen: str) -> None:
             window.setTimeout(() => {
                 shield.remove();
                 const main = window.parent.document.querySelector('[data-testid="stMain"]');
-                if (main) main.style.removeProperty('overflow');
+                if (main) {
+                    main.style.removeProperty('overflow-y');
+                    main.style.removeProperty('scrollbar-gutter');
+                }
             }, 300);
         }
         </script>
@@ -115,7 +118,10 @@ def _preserve_loading_screen_during_analysis() -> None:
         if (shield && loading && !shield.querySelector('.analysis-loading')) {
             shield.appendChild(loading.cloneNode(true));
             const main = doc.querySelector('[data-testid="stMain"]');
-            if (main) main.style.overflow = 'hidden';
+            if (main) {
+                main.style.overflowY = 'scroll';
+                main.style.scrollbarGutter = 'stable';
+            }
         }
         </script>
         """,
@@ -235,9 +241,9 @@ def render_result_loading() -> None:
             _result_loading_markup(completed_count),
             unsafe_allow_html=True,
         )
-        time.sleep(0.7)
+        time.sleep(1.1)
     placeholder.markdown(_result_loading_markup(5), unsafe_allow_html=True)
     _preserve_loading_screen_during_analysis()
-    time.sleep(0.7)
+    time.sleep(0.9)
     st.session_state["workflow_screen"] = "finalize_result"
     st.rerun()

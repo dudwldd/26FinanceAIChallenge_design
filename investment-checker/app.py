@@ -83,9 +83,18 @@ LOSS_RESPONSES = [
 ]
 
 DEFAULT_FOLLOWUP_QUESTIONS = [
-    "현재 포트폴리오에서 가장 확신하는 투자 근거는 무엇인가요?",
-    "처음의 투자 판단을 바꿀 수 있는 반대 근거는 무엇인가요?",
-    "시장 상황이 달라질 경우 어떤 기준으로 다시 판단하시겠어요?",
+    (
+        "포트폴리오 전체가 한 섹터에 집중되어 있습니다. 해당 섹터에 공통적으로 "
+        "영향을 미치는 외부 리스크가 발생할 경우 어떻게 대응할 계획인가요?"
+    ),
+    (
+        "보유 종목들이 유사한 방향으로 움직이는 경향이 높습니다. 이 포트폴리오를 "
+        "분산 투자라고 판단하신 구체적인 근거는 무엇인가요?"
+    ),
+    (
+        "최대 비중 종목에 단일 종목 이벤트가 발생할 경우 포트폴리오 전체에 미치는 "
+        "영향을 사전에 어떻게 고려하셨나요?"
+    ),
 ]
 
 
@@ -100,8 +109,30 @@ def ensure_three_followup_questions(questions: list[str]) -> list[str]:
     return result
 
 
-def get_followup_label(question: str) -> str:
-    """Return the yellow topic label that matches a follow-up question."""
+def get_followup_label(
+    question: str,
+    index: int,
+    analysis_context: dict[str, object],
+) -> str:
+    """Return a metric-based yellow topic label for each question page."""
+    sector_data = analysis_context.get("sector_concentration")
+    if index == 0 and isinstance(sector_data, dict):
+        sector = str(sector_data.get("dominant_sector") or "주요")
+        weight = float(sector_data.get("dominant_weight") or 0)
+        return f"{sector} 섹터 · 비중 {weight:g}% (기준 60% 초과)"
+
+    correlation = analysis_context.get("average_correlation")
+    if index == 1 and isinstance(correlation, (int, float)):
+        return f"평균 상관계수 · {float(correlation):.2f} (기준 0.70 초과)"
+
+    holdings = analysis_context.get("holdings")
+    if index == 2 and isinstance(holdings, list) and holdings:
+        largest = max(holdings, key=lambda item: float(item.get("weight", 0)))
+        return (
+            f'{largest.get("ticker", "최대 종목")} 비중 · '
+            f'{float(largest.get("weight", 0)):g}% (최대 보유)'
+        )
+
     rules = [
         (("섹터", "집중", "분산"), "포트폴리오 집중도와 분산 효과 점검"),
         (("장기", "기간", "1년", "성장"), "투자 기간과 성장 가정 점검"),
@@ -114,6 +145,17 @@ def get_followup_label(question: str) -> str:
         if any(keyword in question for keyword in keywords):
             return label
     return "포트폴리오 위험 요인과 투자 근거 점검"
+
+
+def get_followup_placeholder(label: str) -> str:
+    """Return answer guidance matching the current follow-up topic."""
+    if "섹터" in label:
+        return "섹터 리스크에 대한 대응 계획이나 허용 가능한 손실 범위를 작성해주세요."
+    if "상관계수" in label:
+        return "상관관계 외에 분산이라고 판단한 기준을 작성해주세요."
+    if "최대 보유" in label:
+        return "선택한 근거나 비중을 유지할 조건을 작성해주세요."
+    return "판단 근거와 대응 계획을 자유롭게 작성해주세요."
 
 
 load_dotenv()
@@ -608,7 +650,15 @@ if submitted:
                 st.session_state["cross_examination"] = {
                     "original_thesis": thesis.strip(),
                     "questions": DEFAULT_FOLLOWUP_QUESTIONS,
-                    "analysis_context": {"design_preview": True},
+                    "analysis_context": {
+                        "design_preview": True,
+                        "sector_concentration": {
+                            "dominant_sector": "정보기술",
+                            "dominant_weight": 100.0,
+                        },
+                        "average_correlation": 0.76,
+                        "holdings": holdings,
+                    },
                     "use_ai_analysis": False,
                     "has_pdf": pdf_evidence is not None,
                 }
@@ -869,7 +919,12 @@ if cross_examination and not st.session_state.get("final_cross_examination"):
     )
     drafts = st.session_state.setdefault("cross_examination_draft_answers", {})
     progress = ((current_index + 1) / question_count) * 100
-    followup_label = get_followup_label(str(questions[current_index]))
+    followup_label = get_followup_label(
+        str(questions[current_index]),
+        current_index,
+        dict(cross_examination.get("analysis_context", {})),
+    )
+    answer_placeholder = get_followup_placeholder(followup_label)
 
     st.markdown(
         f"""
@@ -890,24 +945,44 @@ if cross_examination and not st.session_state.get("final_cross_examination"):
     answer = st.text_area(
         "추가 질문 답변",
         value=str(drafts.get(str(current_index), "")),
-        placeholder="판단 근거와 대응 계획을 자유롭게 작성해주세요.",
-        height=160,
+        placeholder=answer_placeholder,
+        height=140,
         key=f"cross_examination_answer_{current_index}",
         label_visibility="collapsed",
     )
 
-    skip_column, spacer_column, next_column = st.columns([1, 4, 1.45])
+    back_column, skip_column, spacer_column, next_column = st.columns(
+        [1.1, 1, 3.2, 1.75]
+    )
+    back_clicked = False
+    if current_index > 0:
+        back_clicked = back_column.button(
+            "← 이전",
+            key=f"followup_back_{current_index}",
+            use_container_width=True,
+        )
     skip_clicked = skip_column.button(
         "건너뛰기",
         key=f"followup_skip_{current_index}",
     )
-    next_label = "진단 결과 보기 →" if current_index == question_count - 1 else "다음 질문 →"
+    next_label = (
+        "최종 분석 계속하기 →"
+        if current_index == question_count - 1
+        else "다음 질문 →"
+    )
     next_clicked = next_column.button(
         next_label,
         type="primary",
         use_container_width=True,
         key=f"followup_next_{current_index}",
     )
+
+    if back_clicked:
+        drafts[str(current_index)] = answer.strip()
+        previous_index = current_index - 1
+        st.session_state["cross_examination_index"] = previous_index
+        st.session_state["workflow_screen"] = f"followup_{previous_index}"
+        st.rerun()
 
     if skip_clicked or next_clicked:
         drafts[str(current_index)] = "" if skip_clicked else answer.strip()
