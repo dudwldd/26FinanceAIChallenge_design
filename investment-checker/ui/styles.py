@@ -655,7 +655,6 @@ def apply_global_styles() -> None:
             box-sizing: border-box;
             overflow: hidden;
             background: #ffffff;
-            font-size: 16px;
             text-align: center;
         }
 
@@ -666,17 +665,13 @@ def apply_global_styles() -> None:
         .analysis-loading h1 {
             margin: 1rem 0 0.55rem !important;
             font-size: 2rem !important;
-            white-space: nowrap;
         }
 
         .loading-spinner {
             width: 60px;
             height: 60px;
-            min-width: 60px;
-            min-height: 60px;
             flex: 0 0 auto;
             margin: 0 auto;
-            box-sizing: border-box;
             border: 5px solid #eef0ff;
             border-top-color: #646cff;
             border-radius: 50%;
@@ -764,44 +759,6 @@ def apply_global_styles() -> None:
             color: #ffffff;
             border-color: #646cff;
             background: #646cff;
-        }
-
-        .result-analysis-loading .loading-spinner {
-            border-color: #fff0ee;
-            border-top-color: var(--court-coral);
-        }
-
-        .result-analysis-loading .loading-card {
-            margin-top: 1.8rem;
-        }
-
-        .result-analysis-loading .loading-stage {
-            min-height: 58px;
-        }
-
-        .result-analysis-loading .loading-stage.complete {
-            color: #19b886;
-        }
-
-        .result-analysis-loading .loading-stage.active {
-            color: var(--court-coral);
-        }
-
-        .result-analysis-loading .loading-stage.complete .loading-node {
-            border-color: #19b886;
-            background: #19b886;
-        }
-
-        .result-analysis-loading .loading-stage.active .loading-node {
-            border-color: var(--court-coral);
-        }
-
-        .result-analysis-loading .loading-stage.complete:not(:last-child)::after {
-            background: #19b886;
-        }
-
-        .result-analysis-loading .loading-stage.active:not(:last-child)::after {
-            background: var(--court-coral);
         }
 
         [data-testid="stMainBlockContainer"]:has(.followup-hero) .workflow-nav {

@@ -31,7 +31,6 @@ from ui.login import render_login
 from ui.styles import apply_global_styles
 from ui.workflow import (
     render_question_loading,
-    render_result_loading,
     render_step_navigation,
     scroll_to_top_on_screen_change,
 )
@@ -81,22 +80,6 @@ LOSS_RESPONSES = [
     "투자 논리가 유효하다면 추가 매수를 검토한다",
     "아직 생각해보지 않았다",
 ]
-
-
-def get_followup_label(question: str) -> str:
-    """Choose a concise UI label for each generated follow-up question."""
-    label_rules = [
-        (("섹터", "집중", "분산"), "포트폴리오 집중도와 분산 효과 점검"),
-        (("장기", "기간", "1년", "성장"), "투자 기간과 성장 가정 점검"),
-        (("하락", "손실", "매도", "대응"), "하락 위험과 대응 기준 점검"),
-        (("재무", "매출", "이익", "부채"), "재무 근거와 수치 정합성 점검"),
-        (("상관", "시장", "외부", "금리"), "시장 환경과 외부 위험 점검"),
-        (("근거", "논리", "판단"), "투자 근거의 구체성과 일관성 점검"),
-    ]
-    for keywords, label in label_rules:
-        if any(keyword in question for keyword in keywords):
-            return label
-    return "포트폴리오 위험 요인과 투자 근거 점검"
 
 
 load_dotenv()
@@ -494,14 +477,7 @@ if workflow_screen == "loading":
     render_question_loading()
     st.stop()
 
-if workflow_screen == "result_loading":
-    render_step_navigation("result")
-    render_result_loading()
-    st.stop()
-
-render_step_navigation(
-    "result" if workflow_screen in {"result", "finalize_result"} else "followup"
-)
+render_step_navigation("result" if workflow_screen == "result" else "followup")
 portfolio_input = st.session_state["portfolio_input"]
 thesis = st.session_state["portfolio_thesis"]
 evidence_pdf = st.session_state.get("evidence_pdf")
@@ -817,33 +793,6 @@ if submitted and st.session_state.get("cross_examination"):
         st.rerun()
 
 cross_examination = st.session_state.get("cross_examination")
-if workflow_screen == "finalize_result" and cross_examination:
-    answer_records = list(st.session_state.get("pending_answer_records", []))
-    final_result: dict[str, object] = {"answers": answer_records}
-    if cross_examination["use_ai_analysis"]:
-        final_context = dict(cross_examination["analysis_context"])
-        final_context["cross_examination_answers"] = answer_records
-        combined_thesis = (
-            f'최초 투자 논리:\n{cross_examination["original_thesis"]}\n\n'
-            "반대심문 질문과 사용자 답변:\n"
-            + "\n".join(
-                f'Q: {record["question"]}\nA: {record["answer"]}'
-                for record in answer_records
-            )
-        )
-        try:
-            final_result["ai_analysis"] = analyze_portfolio_thesis(
-                combined_thesis,
-                final_context,
-                api_key=openai_api_key,
-            )
-        except AIAnalysisError as exc:
-            final_result["ai_error"] = str(exc)
-    st.session_state["final_cross_examination"] = final_result
-    st.session_state.pop("pending_answer_records", None)
-    st.session_state["workflow_screen"] = "result"
-    st.rerun()
-
 if cross_examination and not st.session_state.get("final_cross_examination"):
     questions = list(cross_examination["questions"])
     question_count = len(questions)
@@ -853,7 +802,6 @@ if cross_examination and not st.session_state.get("final_cross_examination"):
     )
     drafts = st.session_state.setdefault("cross_examination_draft_answers", {})
     progress = ((current_index + 1) / question_count) * 100
-    followup_label = get_followup_label(str(questions[current_index]))
 
     st.markdown(
         f"""
@@ -865,7 +813,7 @@ if cross_examination and not st.session_state.get("final_cross_examination"):
             <h1>추가 점검 질문</h1>
             <p>입력한 포트폴리오와 실제 데이터를 바탕으로 추가로 확인하면 좋은 질문을 만들었습니다.</p>
         </section>
-        <div class="followup-risk-chip">ⓘ {followup_label}</div>
+        <div class="followup-risk-chip">ⓘ 포트폴리오 집중도와 투자 근거 점검</div>
         <div class="followup-question-card">{questions[current_index]}</div>
         <div class="followup-answer-label"><strong>답변</strong> <span>(선택사항)</span></div>
         """,
@@ -909,8 +857,29 @@ if cross_examination and not st.session_state.get("final_cross_examination"):
                 }
                 for index, question in enumerate(questions)
             ]
-            st.session_state["pending_answer_records"] = answer_records
-            st.session_state["workflow_screen"] = "result_loading"
+            final_result: dict[str, object] = {"answers": answer_records}
+            if cross_examination["use_ai_analysis"]:
+                final_context = dict(cross_examination["analysis_context"])
+                final_context["cross_examination_answers"] = answer_records
+                combined_thesis = (
+                    f'최초 투자 논리:\n{cross_examination["original_thesis"]}\n\n'
+                    "반대심문 질문과 사용자 답변:\n"
+                    + "\n".join(
+                        f'Q: {record["question"]}\nA: {record["answer"]}'
+                        for record in answer_records
+                    )
+                )
+                try:
+                    with st.spinner("AI가 최초 논리와 추가 답변을 함께 검증하는 중입니다..."):
+                        final_result["ai_analysis"] = analyze_portfolio_thesis(
+                            combined_thesis,
+                            final_context,
+                            api_key=openai_api_key,
+                        )
+                except AIAnalysisError as exc:
+                    final_result["ai_error"] = str(exc)
+            st.session_state["final_cross_examination"] = final_result
+            st.session_state["workflow_screen"] = "result"
             st.rerun()
 
 if cross_examination:
@@ -956,9 +925,9 @@ if cross_examination:
                 "활성화해야 합니다."
             )
 
-        if st.button("새 분석 시작"):
-            st.session_state.pop("cross_examination", None)
-            st.session_state.pop("final_cross_examination", None)
-            for index in range(3):
-                st.session_state.pop(f"cross_examination_answer_{index}", None)
-            st.rerun()
+    if st.button("새 분석 시작"):
+        st.session_state.pop("cross_examination", None)
+        st.session_state.pop("final_cross_examination", None)
+        for index in range(3):
+            st.session_state.pop(f"cross_examination_answer_{index}", None)
+        st.rerun()
