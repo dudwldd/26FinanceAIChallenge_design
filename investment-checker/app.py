@@ -22,10 +22,8 @@ from logic.portfolio import (
     calculate_return_correlation,
     calculate_sector_concentration,
     build_comparison_weights,
-    generate_portfolio_questions,
     validate_portfolio,
 )
-from logic.cross_examination import select_cross_examination_questions
 from logic.thesis_standards import evaluate_thesis_standards
 from ui.login import render_login
 from ui.styles import apply_global_styles
@@ -83,9 +81,21 @@ LOSS_RESPONSES = [
 ]
 
 DEFAULT_FOLLOWUP_QUESTIONS = [
-    "현재 포트폴리오에서 가장 확신하는 투자 근거는 무엇인가요?",
-    "처음의 투자 판단을 바꿀 수 있는 반대 근거는 무엇인가요?",
-    "시장 상황이 달라질 경우 어떤 기준으로 다시 판단하시겠어요?",
+    "포트폴리오 전체가 정보기술 섹터에 집중되어 있습니다. 기술 섹터에 공통적으로 영향을 미치는 외부 리스크(금리 인상, 반독점 규제 등)가 발생할 경우 어떻게 대응할 계획인가요?",
+    "보유 종목 간 평균 상관계수가 0.76으로, 종목들이 유사한 방향으로 움직이는 경향이 높습니다. 이 포트폴리오를 분산 투자라고 판단하신 구체적인 근거는 무엇인가요?",
+    "AAPL이 포트폴리오의 40%를 차지하는 최대 비중 종목입니다. 단일 종목 이벤트(실적 쇼크, 공급망 문제 등)가 포트폴리오 전체에 미치는 영향을 사전에 고려하셨나요?",
+]
+
+DEFAULT_FOLLOWUP_LABELS = [
+    "정보기술 섹터 · 비중 100% (기준 60% 초과)",
+    "평균 상관계수 · 0.76 (기준 0.70 초과)",
+    "AAPL 비중 · 전체의 40% (최대 보유)",
+]
+
+DEFAULT_FOLLOWUP_PLACEHOLDERS = [
+    "섹터 리스크에 대한 대응 계획이나 허용 가능한 손실 범위를 작성해주세요.",
+    "상관관계 외에 분산이라고 판단한 기준(지역, 비즈니스 모델 차이 등)을 작성해주세요.",
+    "AAPL 비중을 선택한 근거나 비중을 유지할 조건을 작성해주세요.",
 ]
 
 
@@ -100,20 +110,43 @@ def ensure_three_followup_questions(questions: list[str]) -> list[str]:
     return result
 
 
-def get_followup_label(question: str) -> str:
-    """Return the yellow topic label that matches a follow-up question."""
-    rules = [
-        (("섹터", "집중", "분산"), "포트폴리오 집중도와 분산 효과 점검"),
-        (("장기", "기간", "1년", "성장"), "투자 기간과 성장 가정 점검"),
-        (("하락", "손실", "매도", "대응"), "하락 위험과 대응 기준 점검"),
-        (("재무", "매출", "이익", "부채"), "재무 근거와 수치 정합성 점검"),
-        (("상관", "시장", "외부", "금리"), "시장 환경과 외부 위험 점검"),
-        (("근거", "논리", "판단"), "투자 근거의 구체성과 일관성 점검"),
+def build_metric_followups(
+    holdings: list[dict],
+    dominant_sector: str = "정보기술",
+    dominant_weight: float = 100.0,
+    average_correlation: float | None = 0.76,
+) -> tuple[list[str], list[str], list[str]]:
+    """Build three questions together with their matching metric copy."""
+    sector = {
+        "Technology": "정보기술",
+        "Information Technology": "정보기술",
+    }.get(dominant_sector, dominant_sector or "정보기술")
+    correlation = 0.76 if average_correlation is None else average_correlation
+    largest = max(
+        holdings or [{"ticker": "AAPL", "weight": 40.0}],
+        key=lambda holding: float(holding.get("weight", 0)),
+    )
+    ticker = str(largest.get("ticker", "AAPL")).upper()
+    largest_weight = float(largest.get("weight", 40.0))
+    sector_weight_text = f"{dominant_weight:.0f}%"
+    largest_weight_text = f"{largest_weight:.0f}%"
+
+    questions = [
+        f"포트폴리오 전체가 {sector} 섹터에 집중되어 있습니다. 기술 섹터에 공통적으로 영향을 미치는 외부 리스크(금리 인상, 반독점 규제 등)가 발생할 경우 어떻게 대응할 계획인가요?",
+        f"보유 종목 간 평균 상관계수가 {correlation:.2f}으로, 종목들이 유사한 방향으로 움직이는 경향이 높습니다. 이 포트폴리오를 분산 투자라고 판단하신 구체적인 근거는 무엇인가요?",
+        f"{ticker}이 포트폴리오의 {largest_weight_text}를 차지하는 최대 비중 종목입니다. 단일 종목 이벤트(실적 쇼크, 공급망 문제 등)가 포트폴리오 전체에 미치는 영향을 사전에 고려하셨나요?",
     ]
-    for keywords, label in rules:
-        if any(keyword in question for keyword in keywords):
-            return label
-    return "포트폴리오 위험 요인과 투자 근거 점검"
+    labels = [
+        f"{sector} 섹터 · 비중 {sector_weight_text} (기준 60% 초과)",
+        f"평균 상관계수 · {correlation:.2f} (기준 0.70 초과)",
+        f"{ticker} 비중 · 전체의 {largest_weight_text} (최대 보유)",
+    ]
+    placeholders = [
+        "섹터 리스크에 대한 대응 계획이나 허용 가능한 손실 범위를 작성해주세요.",
+        "상관관계 외에 분산이라고 판단한 기준(지역, 비즈니스 모델 차이 등)을 작성해주세요.",
+        f"{ticker} 비중을 선택한 근거나 비중을 유지할 조건을 작성해주세요.",
+    ]
+    return questions, labels, placeholders
 
 
 load_dotenv()
@@ -605,9 +638,14 @@ if submitted:
                 data_error = str(exc)
 
             if data_error:
+                preview_questions, preview_labels, preview_placeholders = (
+                    build_metric_followups(holdings)
+                )
                 st.session_state["cross_examination"] = {
                     "original_thesis": thesis.strip(),
-                    "questions": DEFAULT_FOLLOWUP_QUESTIONS,
+                    "questions": preview_questions,
+                    "question_labels": preview_labels,
+                    "answer_placeholders": preview_placeholders,
                     "analysis_context": {"design_preview": True},
                     "use_ai_analysis": False,
                     "has_pdf": pdf_evidence is not None,
@@ -756,20 +794,15 @@ if submitted:
                             "거래비용·세금·환율을 반영하지 않습니다. 과거 성과는 미래 성과를 보장하지 않습니다."
                         )
 
-                        questions = generate_portfolio_questions(
+                        (
+                            cross_examination_questions,
+                            cross_examination_labels,
+                            cross_examination_placeholders,
+                        ) = build_metric_followups(
                             holdings,
-                            comparison_weights,
                             str(sector_concentration["dominant_sector"]),
                             float(sector_concentration["dominant_weight"]),
                             average_correlation,
-                        )
-                        cross_examination_questions = (
-                            select_cross_examination_questions(
-                                standard_findings, questions
-                            )
-                        )
-                        cross_examination_questions = ensure_three_followup_questions(
-                            cross_examination_questions
                         )
                         st.markdown("#### 1차 분석에서 확인된 쟁점")
                         st.write(
@@ -799,6 +832,8 @@ if submitted:
                         st.session_state["cross_examination"] = {
                             "original_thesis": thesis.strip(),
                             "questions": cross_examination_questions,
+                            "question_labels": cross_examination_labels,
+                            "answer_placeholders": cross_examination_placeholders,
                             "analysis_context": ai_context,
                             "use_ai_analysis": use_ai_analysis,
                             "has_pdf": pdf_evidence is not None,
@@ -869,7 +904,12 @@ if cross_examination and not st.session_state.get("final_cross_examination"):
     )
     drafts = st.session_state.setdefault("cross_examination_draft_answers", {})
     progress = ((current_index + 1) / question_count) * 100
-    followup_label = get_followup_label(str(questions[current_index]))
+    labels = cross_examination.get("question_labels", DEFAULT_FOLLOWUP_LABELS)
+    placeholders = cross_examination.get(
+        "answer_placeholders", DEFAULT_FOLLOWUP_PLACEHOLDERS
+    )
+    followup_label = labels[current_index]
+    answer_placeholder = placeholders[current_index]
 
     st.markdown(
         f"""
@@ -890,7 +930,7 @@ if cross_examination and not st.session_state.get("final_cross_examination"):
     answer = st.text_area(
         "추가 질문 답변",
         value=str(drafts.get(str(current_index), "")),
-        placeholder="판단 근거와 대응 계획을 자유롭게 작성해주세요.",
+        placeholder=answer_placeholder,
         height=160,
         key=f"cross_examination_answer_{current_index}",
         label_visibility="collapsed",
