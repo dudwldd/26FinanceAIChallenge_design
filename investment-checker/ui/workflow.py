@@ -108,15 +108,19 @@ def _keep_loading_background_covered() -> None:
 
 
 def _preserve_loading_screen_during_analysis() -> None:
-    """Clone the final loading view so it survives the analysis rerun."""
+    """Mirror loading content into one stable overlay throughout every stage."""
     components.html(
         """
         <script>
         const doc = window.parent.document;
         const shield = doc.getElementById('workflow-transition-shield');
-        const loading = doc.querySelector('.analysis-loading');
-        if (shield && loading && !shield.querySelector('.analysis-loading')) {
-            shield.appendChild(loading.cloneNode(true));
+        const loading = doc.querySelector('[data-testid="stMain"] .analysis-loading');
+        if (shield && loading) {
+            const clone = loading.cloneNode(true);
+            clone.style.visibility = 'visible';
+            shield.style.zIndex = '120';
+            shield.replaceChildren(clone);
+            loading.style.visibility = 'hidden';
             const main = doc.querySelector('[data-testid="stMain"]');
             if (main) {
                 main.style.overflowY = 'scroll';
@@ -223,6 +227,7 @@ def render_question_loading() -> None:
             _loading_markup(active_index),
             unsafe_allow_html=True,
         )
+        _preserve_loading_screen_during_analysis()
         time.sleep(1.1)
     placeholder.markdown(_loading_markup(3), unsafe_allow_html=True)
     _preserve_loading_screen_during_analysis()
@@ -241,6 +246,7 @@ def render_result_loading() -> None:
             _result_loading_markup(completed_count),
             unsafe_allow_html=True,
         )
+        _preserve_loading_screen_during_analysis()
         time.sleep(1.1)
     placeholder.markdown(_result_loading_markup(5), unsafe_allow_html=True)
     _preserve_loading_screen_during_analysis()
