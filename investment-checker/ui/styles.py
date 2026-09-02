@@ -336,7 +336,7 @@ def apply_global_styles() -> None:
         }
 
         .page-hero {
-            margin: 0 0 3.7rem;
+            margin: 0 0 2.2rem;
         }
 
         .page-hero h1 {
@@ -767,8 +767,8 @@ def apply_global_styles() -> None:
         }
 
         .result-analysis-loading .loading-spinner {
-            border-color: #fff0ee;
-            border-top-color: var(--court-coral);
+            border-color: #e8f8f2;
+            border-top-color: #19b886;
         }
 
         .result-analysis-loading .loading-card {

@@ -217,10 +217,10 @@ def render_question_loading() -> None:
             _loading_markup(active_index),
             unsafe_allow_html=True,
         )
-        time.sleep(0.9)
+        time.sleep(1.1)
     placeholder.markdown(_loading_markup(3), unsafe_allow_html=True)
     _preserve_loading_screen_during_analysis()
-    time.sleep(0.55)
+    time.sleep(0.9)
     st.session_state["workflow_screen"] = "analysis"
     st.session_state["analysis_processed"] = False
     st.rerun()
@@ -238,6 +238,6 @@ def render_result_loading() -> None:
         time.sleep(0.7)
     placeholder.markdown(_result_loading_markup(5), unsafe_allow_html=True)
     _preserve_loading_screen_during_analysis()
-    time.sleep(0.45)
+    time.sleep(0.7)
     st.session_state["workflow_screen"] = "finalize_result"
     st.rerun()
