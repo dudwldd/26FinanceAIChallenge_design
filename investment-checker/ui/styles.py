@@ -1102,7 +1102,7 @@ def apply_global_styles() -> None:
 
         .final-report > h1 {
             margin: 0.65rem 0 0.8rem !important;
-            font-size: 1.3rem !important;
+            font-size: 34px !important;
             line-height: 1.15;
         }
 
@@ -1134,7 +1134,7 @@ def apply_global_styles() -> None:
         .final-report section h2 {
             display: flex;
             align-items: center;
-            gap: 0.65rem;
+            gap: 0.75rem;
             margin: 0 0 1rem !important;
             font-size: 1.08rem !important;
             font-family: inherit !important;
@@ -1149,8 +1149,17 @@ def apply_global_styles() -> None:
         }
 
         .final-report section h2 em {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            flex: 0 0 32px;
             color: var(--court-coral);
-            font-size: 0.84rem;
+            border-radius: 50%;
+            background: #fff0ee;
+            font-size: 1.02rem;
+            font-weight: 800;
             font-style: normal;
         }
 
