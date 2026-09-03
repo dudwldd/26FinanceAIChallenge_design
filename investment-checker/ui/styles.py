@@ -772,20 +772,63 @@ def apply_global_styles() -> None:
         }
 
         .result-analysis-loading .loading-spinner {
+            width: 52px;
+            height: 52px;
+            min-width: 52px;
+            min-height: 52px;
+            border-width: 4px;
             border-color: #fcecea;
             border-top-color: var(--court-coral);
         }
 
         .result-analysis-loading {
-            transform: translateY(38px);
+            transform: translateY(2px);
+            font-size: 14px;
+        }
+
+        .result-analysis-loading h1 {
+            margin: 1.15rem 0 0.45rem !important;
+            font-size: 1.55rem !important;
+        }
+
+        .result-analysis-loading .loading-lead {
+            font-size: 0.76rem;
+            line-height: 1.5;
         }
 
         .result-analysis-loading .loading-card {
-            margin-top: 1.8rem;
+            width: min(388px, calc(100vw - 3rem));
+            margin-top: 2rem;
+            padding: 1rem 1.2rem;
+            border-radius: 14px;
         }
 
         .result-analysis-loading .loading-stage {
-            min-height: 58px;
+            grid-template-columns: 34px 1fr;
+            min-height: 53px;
+        }
+
+        .result-analysis-loading .loading-node {
+            width: 24px;
+            height: 24px;
+            font-size: 0.72rem;
+        }
+
+        .result-analysis-loading .loading-stage:not(:last-child)::after {
+            top: 25px;
+            bottom: -1px;
+            left: 11px;
+            width: 2px;
+        }
+
+        .result-analysis-loading .loading-stage strong {
+            padding-top: 0.05rem;
+            font-size: 0.75rem;
+        }
+
+        .result-analysis-loading .loading-stage p {
+            margin-top: 0.1rem;
+            font-size: 0.64rem;
         }
 
         .result-analysis-loading .loading-stage.complete {
