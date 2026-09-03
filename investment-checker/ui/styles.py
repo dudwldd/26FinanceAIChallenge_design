@@ -1136,7 +1136,7 @@ def apply_global_styles() -> None:
             align-items: center;
             gap: 0.65rem;
             margin: 0 0 1rem !important;
-            font-size: 0.9rem !important;
+            font-size: 1.08rem !important;
             font-family: inherit !important;
             font-weight: 800;
         }
@@ -1150,7 +1150,7 @@ def apply_global_styles() -> None:
 
         .final-report section h2 em {
             color: var(--court-coral);
-            font-size: 0.75rem;
+            font-size: 0.84rem;
             font-style: normal;
         }
 
