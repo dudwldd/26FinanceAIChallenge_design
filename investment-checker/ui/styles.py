@@ -1102,7 +1102,7 @@ def apply_global_styles() -> None:
 
         .final-report > h1 {
             margin: 0.65rem 0 0.8rem !important;
-            font-size: 1.55rem !important;
+            font-size: 1.3rem !important;
             line-height: 1.15;
         }
 
