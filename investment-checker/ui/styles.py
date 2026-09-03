@@ -772,8 +772,8 @@ def apply_global_styles() -> None:
         }
 
         .result-analysis-loading .loading-spinner {
-            border-color: #e8f8f2;
-            border-top-color: #19b886;
+            border-color: #fcecea;
+            border-top-color: var(--court-coral);
         }
 
         .result-analysis-loading {
