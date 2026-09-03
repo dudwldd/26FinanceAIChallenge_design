@@ -1091,7 +1091,7 @@ def apply_global_styles() -> None:
 
         .final-report {
             color: #111827;
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .result-kicker {
@@ -1102,7 +1102,7 @@ def apply_global_styles() -> None:
 
         .final-report > h1 {
             margin: 0.65rem 0 0.8rem !important;
-            font-size: 2.15rem !important;
+            font-size: 1.85rem !important;
             line-height: 1.15;
         }
 
@@ -1122,9 +1122,9 @@ def apply_global_styles() -> None:
         }
 
         .result-rule {
-            height: 1px;
+            height: 0;
             margin: 1.4rem 0 2.2rem;
-            background: linear-gradient(90deg, var(--court-coral) 28%, #dce3ed 28%);
+            background: transparent;
         }
 
         .final-report section {
@@ -1184,7 +1184,7 @@ def apply_global_styles() -> None:
             gap: 0.5rem;
         }
 
-        .result-score-card strong { font-size: 0.72rem; }
+        .result-score-card strong { font-size: 0.82rem; }
         .result-score-card span {
             padding: 0.15rem 0.35rem;
             color: #c98100;
@@ -1195,7 +1195,7 @@ def apply_global_styles() -> None:
         }
         .result-score-card.good span { color: #099d70; background: #e5faf3; }
         .result-score-card.bad span { color: #e64b40; background: #ffebe9; }
-        .result-score-card p { margin: 0.65rem 0 0; color: #57657b; font-size: 0.65rem; line-height: 1.5; }
+        .result-score-card p { margin: 0.65rem 0 0; color: #57657b; font-size: 0.76rem; line-height: 1.55; }
 
         .result-thesis {
             margin: 1.1rem auto 0;
@@ -1208,13 +1208,13 @@ def apply_global_styles() -> None:
             margin: 0 0 1rem;
             padding-left: 0.8rem;
             border-left: 2px solid var(--court-coral);
-            font-size: 0.8rem;
+            font-size: 0.92rem;
             font-weight: 700;
         }
 
         .result-thesis dl { display: grid; grid-template-columns: 70px 1fr 70px 1fr; gap: 0.65rem; margin: 0; }
         .result-thesis dt { color: #92a0b4; font-size: 0.62rem; }
-        .result-thesis dd { margin: 0; padding-bottom: 0.4rem; border-bottom: 1px solid #e3e8f0; font-size: 0.68rem; }
+        .result-thesis dd { margin: 0; padding-bottom: 0.4rem; border-bottom: 1px solid #e3e8f0; font-size: 0.78rem; }
 
         .result-evidence {
             display: flex;
@@ -1230,8 +1230,8 @@ def apply_global_styles() -> None:
         .result-evidence > b { color: #15b981; }
         .result-evidence.warn > b { color: #f4a300; }
         .result-evidence.bad > b { color: var(--court-coral); }
-        .result-evidence strong { display: block; font-size: 0.72rem; }
-        .result-evidence small { display: block; margin-top: 0.25rem; color: #74839a; font-size: 0.62rem; }
+        .result-evidence strong { display: block; font-size: 0.82rem; }
+        .result-evidence small { display: block; margin-top: 0.25rem; color: #74839a; font-size: 0.72rem; }
 
         .result-bias {
             display: grid;
@@ -1244,7 +1244,7 @@ def apply_global_styles() -> None:
             border-radius: 9px;
         }
         .result-bias strong { padding: 0.45rem; color: #a86800; border: 1px solid #f1c665; border-radius: 7px; background: #fffaf0; text-align: center; font-size: 0.68rem; }
-        .result-bias p { margin: 0; align-self: center; font-size: 0.68rem; line-height: 1.5; }
+        .result-bias p { margin: 0; align-self: center; font-size: 0.78rem; line-height: 1.55; }
 
         .result-qa {
             margin-bottom: 0.75rem;
@@ -1257,8 +1257,8 @@ def apply_global_styles() -> None:
         .result-qa > div { display: flex; align-items: center; gap: 0.7rem; padding: 0.75rem 1rem 0; }
         .result-qa small { color: #7f8da5; font-weight: 800; }
         .result-qa span { padding: 0.2rem 0.45rem; color: #ffd95f; border: 1px solid #826c1d; border-radius: 5px; font-size: 0.58rem; font-weight: 800; }
-        .result-qa > strong { display: block; padding: 0.65rem 1rem 0.9rem; font-size: 0.72rem; line-height: 1.55; }
-        .result-qa > p { margin: 0; padding: 0.75rem 1rem; color: #bc6c1b; background: #fff9e8; font-size: 0.68rem; font-style: italic; }
+        .result-qa > strong { display: block; padding: 0.65rem 1rem 0.9rem; font-size: 0.82rem; line-height: 1.6; }
+        .result-qa > p { margin: 0; padding: 0.75rem 1rem; color: #bc6c1b; background: #fff9e8; font-size: 0.78rem; font-style: italic; }
 
         .result-empty {
             padding: 1rem;
@@ -1266,18 +1266,18 @@ def apply_global_styles() -> None:
             border: 1px solid #dce3ed;
             border-radius: 9px;
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             font-style: italic;
         }
 
         .result-checklist { margin: 0; padding: 0; overflow: hidden; border: 1px solid #dce3ed; border-radius: 9px; list-style: none; }
-        .result-checklist li { display: flex; gap: 0.8rem; padding: 0.75rem 1rem; border-bottom: 1px solid #dce3ed; font-size: 0.66rem; }
+        .result-checklist li { display: flex; gap: 0.8rem; padding: 0.75rem 1rem; border-bottom: 1px solid #dce3ed; font-size: 0.76rem; }
         .result-checklist li:last-child { border-bottom: 0; }
         .result-checklist i { width: 12px; height: 12px; flex: 0 0 auto; border: 1px solid #cfd8e6; border-radius: 2px; }
 
         .result-limitations { overflow: hidden; border: 1px solid #dce3ed; border-radius: 9px; }
-        .result-limitations summary { padding: 0.8rem 1rem; font-size: 0.7rem; font-weight: 800; cursor: pointer; }
-        .result-limitations ul { margin: 0; padding: 0.8rem 1.7rem 1rem; border-top: 1px solid #dce3ed; color: #64738a; font-size: 0.64rem; line-height: 1.8; }
+        .result-limitations summary { padding: 0.8rem 1rem; font-size: 0.8rem; font-weight: 800; cursor: pointer; }
+        .result-limitations ul { margin: 0; padding: 0.8rem 1.7rem 1rem; border-top: 1px solid #dce3ed; color: #64738a; font-size: 0.74rem; line-height: 1.8; }
         .result-api-warning { margin-bottom: 1rem; padding: 0.8rem; color: #9a6500; border-radius: 8px; background: #fff9df; }
 
         [data-testid="stMainBlockContainer"]:has(.final-report) > div > div > div[data-testid="stHorizontalBlock"] {
