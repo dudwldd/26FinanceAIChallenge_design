@@ -898,12 +898,12 @@ def apply_global_styles() -> None:
         .followup-hero h1 {
             display: block;
             width: 100%;
-            margin: 1.25rem 0 0.55rem !important;
+            margin: 1.25rem 0 0.15rem !important;
             color: #111827;
             font-family: "Noto Serif KR", "Batang", serif !important;
             font-size: 2rem !important;
             font-weight: 500 !important;
-            line-height: 1.25 !important;
+            line-height: 1.15 !important;
             letter-spacing: -0.045em;
             white-space: nowrap;
         }
