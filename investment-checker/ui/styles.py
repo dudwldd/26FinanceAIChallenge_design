@@ -700,9 +700,11 @@ def apply_global_styles() -> None:
         }
 
         .loading-card {
-            width: min(520px, calc(100vw - 3rem));
-            margin-top: 2rem;
+            align-self: center;
+            width: min(430px, calc(100vw - 3rem));
+            margin: 2rem auto 0;
             padding: 1.2rem 1.45rem;
+            box-sizing: border-box;
             border: 1px solid #dde2ed;
             border-radius: 18px;
             background: #ffffff;
@@ -898,7 +900,7 @@ def apply_global_styles() -> None:
         .followup-hero h1 {
             display: block;
             width: 100%;
-            margin: 1.25rem 0 0.15rem !important;
+            margin: 1.25rem 0 -0.4rem !important;
             color: #111827;
             font-family: "Noto Serif KR", "Batang", serif !important;
             font-size: 2rem !important;
@@ -982,7 +984,7 @@ def apply_global_styles() -> None:
         div[data-testid="stVerticalBlock"]:has(
             > div[data-testid="stElementContainer"] .portfolio-card-title
         ) {
-            margin-bottom: 1.4rem;
+            margin-bottom: 0.45rem;
             padding: 3rem 3.2rem 3.1rem !important;
             border: 1px solid #dbe3ee !important;
             border-radius: 22px !important;
