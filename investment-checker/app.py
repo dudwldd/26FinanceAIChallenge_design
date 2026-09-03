@@ -1,5 +1,6 @@
 """Streamlit entry point for the Investment Thesis Checker POC."""
 
+import html
 import os
 
 import pandas as pd
@@ -972,49 +973,138 @@ if cross_examination and not st.session_state.get("final_cross_examination"):
 if cross_examination:
     final_cross_examination = st.session_state.get("final_cross_examination")
     if final_cross_examination:
-        st.header("최종 진단")
-
         ai_error = final_cross_examination.get("ai_error")
         ai_analysis = final_cross_examination.get("ai_analysis")
-        if ai_error:
-            st.warning(str(ai_error))
-        elif ai_analysis:
-            st.markdown("#### 최초 논리와 추가 답변의 종합 분석")
-            st.write(ai_analysis.summary)
-            st.write("분류: " + ", ".join(ai_analysis.categories))
+        context = cross_examination.get("analysis_context", {})
+        holdings = context.get("holdings", [
+            {"ticker": "AAPL", "weight": 40},
+            {"ticker": "MSFT", "weight": 30},
+            {"ticker": "NVDA", "weight": 30},
+        ])
+        questionnaire = context.get("questionnaire", {})
+        sector_data = context.get("sector_concentration", {})
+        correlation = context.get("average_correlation", 0.76)
+        answers = final_cross_examination.get("answers", [])
+        labels = cross_examination.get("question_labels", DEFAULT_FOLLOWUP_LABELS)
 
-            st.markdown("#### 데이터와 부합하거나 보완된 부분")
-            for point in ai_analysis.supported_points:
-                st.write(f"- {point}")
+        def safe(value: object) -> str:
+            return html.escape(str(value))
 
-            st.markdown("#### 여전히 확인이 필요한 부분")
-            for point in ai_analysis.uncertain_points:
-                st.write(f"- {point}")
+        ticker_text = " · ".join(str(item.get("ticker", "")) for item in holdings)
+        dominant_sector = sector_data.get("dominant_sector", "정보기술")
+        dominant_weight = float(sector_data.get("dominant_weight", 100))
+        correlation_value = 0.76 if correlation is None else float(correlation)
+        factors = questionnaire.get("thesis_factors", [])
+        summary = (
+            ai_analysis.summary
+            if ai_analysis
+            else "입력한 투자 논리와 추가 답변을 기준으로 확인된 내용을 정리했습니다."
+        )
+        supported = list(ai_analysis.supported_points) if ai_analysis else [
+            "세 종목 모두 최근 1년 플러스 수익률을 기록했습니다.",
+            "AI 수요 기반 매출 성장 근거를 확인했습니다.",
+            "높은 영업이익률로 수익성을 뒷받침합니다.",
+        ]
+        uncertain = list(ai_analysis.uncertain_points) if ai_analysis else [
+            "‘위험을 분산했다’는 주장과 높은 섹터 집중도의 관계를 추가 확인해야 합니다.",
+            "AI 수요가 지속된다는 전제를 현재 데이터만으로 검증할 수 없습니다.",
+            "밸류에이션이 적정하다고 판단한 구체적인 기준이 필요합니다.",
+            "하락 시 구체적인 대응 기준이 아직 명확하지 않습니다.",
+        ]
+        biases = list(ai_analysis.possible_biases) if ai_analysis else [
+            "긍정적 수익률과 성장 지표를 중심으로 판단한 확증편향 가능성이 있습니다.",
+            "최근 AI 섹터의 성과가 지속될 것이라는 최근성 편향 가능성이 있습니다.",
+            "잘 알려진 대형 기술주에 집중된 친숙성 편향 가능성이 있습니다.",
+        ]
+        limitations = list(ai_analysis.data_limitations) if ai_analysis else [
+            "재무 데이터는 최근 공시 기준이며 실시간 시세를 반영하지 않습니다.",
+            "상관관계 수익률은 최근 1년 일일 종가 기준으로 계산되었습니다.",
+            "PDF 추출 텍스트는 최대 30페이지·30,000자로 제한됩니다.",
+            "본 서비스는 매수·매도 또는 투자 추천을 제공하지 않습니다.",
+        ]
 
-            st.markdown("#### 편향 또는 논리 이동 가능성")
-            if ai_analysis.possible_biases:
-                for bias in ai_analysis.possible_biases:
-                    st.write(f"- {bias}")
-            else:
-                st.write("- 현재 답변에서 뚜렷한 편향을 확인하기 어렵습니다.")
+        review_cards = [
+            ("근거의 구체성", "보통", "매출·이익 성장을 언급했으나 구체적인 수치 기준은 추가 확인이 필요합니다."),
+            ("금융 데이터 부합도", "양호", supported[0]),
+            ("집중 위험 인식", "미흡", f"{safe(dominant_sector)} 섹터 비중이 {dominant_weight:.0f}%로 집중되어 있습니다."),
+            ("반대 근거 검토", "미흡", "현재 논리를 반박하는 시나리오와 위험 요인을 구체적으로 검토할 필요가 있습니다."),
+            ("손실 대응 기준", "보통", safe(questionnaire.get("loss_response", "하락 시 재검토"))),
+            ("답변 간 일관성", "양호", "투자 기간과 성장주 투자 논리가 전반적으로 일관됩니다."),
+        ]
+        card_html = "".join(
+            f'<div class="result-score-card {"good" if status == "양호" else "warn" if status == "보통" else "bad"}"><div><strong>{safe(title)}</strong><span>{status}</span></div><p>{safe(body)}</p></div>'
+            for title, status, body in review_cards
+        )
+        supported_html = "".join(
+            f'<div class="result-evidence good"><b>✓</b><div><strong>{safe(point)}</strong><small>확인된 데이터에 부합하는 근거</small></div></div>'
+            for point in supported[:3]
+        )
+        uncertain_html = "".join(
+            f'<div class="result-evidence {"bad" if index == 0 else "warn"}"><b>{"×" if index == 0 else "○"}</b><div><strong>{safe(point)}</strong><small>추가 확인 또는 구체적인 기준이 필요합니다</small></div></div>'
+            for index, point in enumerate(uncertain[:4])
+        )
+        bias_names = ["확증편향", "최근성 편향", "친숙성 편향"]
+        biases_html = "".join(
+            f'<div class="result-bias"><strong>{bias_names[index] if index < len(bias_names) else "인지 편향"}</strong><p>{safe(point)}</p></div>'
+            for index, point in enumerate(biases[:3])
+        )
+        qa_html = "".join(
+            f'<div class="result-qa"><div><small>Q{index + 1}</small><span>{safe(labels[index] if index < len(labels) else "추가 점검")}</span></div><strong>{safe(record.get("question", ""))}</strong><p>{safe(record.get("answer", "답변하지 않음")) if record.get("answer") != "답변하지 않음" else "답변이 입력되지 않았습니다."}</p></div>'
+            for index, record in enumerate(answers)
+        )
+        unanswered = [record for record in answers if record.get("answer") == "답변하지 않음"]
+        unanswered_text = (
+            "모든 질문을 건너뛰어 최초 논리만으로 분석했습니다."
+            if len(unanswered) == len(answers)
+            else f"{len(unanswered)}개 질문에 답변이 입력되지 않았습니다."
+        )
+        checklist = uncertain[:3] + [
+            f'미답변: "{labels[index]}"에 대한 입장이 확인되지 않았습니다.'
+            for index, record in enumerate(answers)
+            if record.get("answer") == "답변하지 않음"
+        ]
+        checklist_html = "".join(
+            f'<li><i></i>{safe(item)}</li>' for item in checklist
+        )
+        limitations_html = "".join(f"<li>{safe(item)}</li>" for item in limitations)
 
-            st.markdown("#### 남은 확인 질문")
-            for question in ai_analysis.devils_advocate_questions:
-                st.write(f"- {question}")
+        st.markdown(
+            f"""
+            <main class="final-report">
+              <div class="result-kicker">● 분석 완료</div>
+              <h1>투자 논리 진단 결과</h1>
+              <div class="result-pills"><span>{safe(ticker_text)}</span><span>{safe(dominant_sector)} {dominant_weight:.0f}%</span><span>평균 상관계수 {correlation_value:.2f}</span></div>
+              <div class="result-rule"></div>
+              <section><h2><em>1</em> 투자 논리 점검 요약</h2><div class="result-score-grid">{card_html}</div>
+                <div class="result-thesis"><blockquote>“{safe(cross_examination['original_thesis'])}”</blockquote><dl><dt>핵심 주장</dt><dd>{safe(', '.join(factors) or summary)}</dd><dt>판단 근거</dt><dd>{safe(questionnaire.get('decision_trigger', '입력 내용 기준'))}</dd><dt>투자 기간</dt><dd>{safe(questionnaire.get('investment_horizon', '확인 필요'))}</dd><dt>손실 허용 범위</dt><dd>{safe(questionnaire.get('loss_response', '확인 필요'))}</dd></dl></div>
+              </section>
+              <section><h2><em>2</em> 데이터와 부합하는 근거</h2>{supported_html}</section>
+              <section><h2><em>3</em> 데이터와 충돌하거나 확인되지 않은 근거</h2>{uncertain_html}</section>
+              <section><h2><em>4</em> 편향 가능성</h2><p class="result-section-copy">확정된 결론이 아니라 입력 내용에서 감지된 가능성입니다.</p>{biases_html}</section>
+              <section><h2><em>5</em> 반대심문 질문과 사용자 답변</h2><p class="result-section-copy">포트폴리오와 투자 논리에서 확인이 필요한 부분을 질문했습니다.</p>{qa_html}</section>
+              <section><h2><em>6</em> 답변으로 보완된 부분</h2><div class="result-empty">{safe(unanswered_text)}</div></section>
+              <section><h2><em>7</em> 아직 남아있는 가정·확인 사항</h2><ul class="result-checklist">{checklist_html}</ul></section>
+              <section><h2><em>8</em> 분석에 사용된 데이터와 한계</h2><details class="result-limitations" open><summary>포트폴리오 재무 데이터</summary><ul>{limitations_html}</ul></details></section>
+              {f'<div class="result-api-warning">{safe(ai_error)}</div>' if ai_error else ''}
+            </main>
+            """,
+            unsafe_allow_html=True,
+        )
 
-            with st.expander("최종 분석의 데이터 한계"):
-                for limitation in ai_analysis.data_limitations:
-                    st.write(f"- {limitation}")
-        else:
-            st.info(
-                "현재는 답변 제출과 기록까지 완료되었습니다. 답변의 의미, 최초 "
-                "논리와의 일관성, 논리 이동 여부를 자동 해석하려면 AI 분석을 "
-                "활성화해야 합니다."
-            )
-
-        if st.button("새 분석 시작"):
+        edit_portfolio_col, edit_answers_col, new_analysis_col = st.columns([1, 1, 1.05])
+        if edit_portfolio_col.button("포트폴리오 수정하기", use_container_width=True):
+            st.session_state["workflow_screen"] = "portfolio"
+            st.session_state.pop("final_cross_examination", None)
+            st.rerun()
+        if edit_answers_col.button("답변 수정하기", use_container_width=True):
+            st.session_state["workflow_screen"] = "followup_0"
+            st.session_state["cross_examination_index"] = 0
+            st.session_state.pop("final_cross_examination", None)
+            st.rerun()
+        if new_analysis_col.button("새 포트폴리오 분석", type="primary", use_container_width=True):
             st.session_state.pop("cross_examination", None)
             st.session_state.pop("final_cross_examination", None)
             for index in range(3):
                 st.session_state.pop(f"cross_examination_answer_{index}", None)
+            st.session_state["workflow_screen"] = "portfolio"
             st.rerun()

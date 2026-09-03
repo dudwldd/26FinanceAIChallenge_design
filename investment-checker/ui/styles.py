@@ -1083,6 +1083,208 @@ def apply_global_styles() -> None:
             letter-spacing: 0.04em;
         }
 
+        [data-testid="stMainBlockContainer"]:has(.final-report) {
+            max-width: 680px;
+            padding-top: 2.4rem;
+            padding-bottom: 4rem;
+        }
+
+        .final-report {
+            color: #111827;
+            font-size: 12px;
+        }
+
+        .result-kicker {
+            color: #15b981;
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+
+        .final-report > h1 {
+            margin: 0.65rem 0 0.8rem !important;
+            font-size: 2.15rem !important;
+            line-height: 1.15;
+        }
+
+        .result-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+
+        .result-pills span {
+            padding: 0.3rem 0.65rem;
+            color: #8090aa;
+            border: 1px solid #dbe2ed;
+            border-radius: 999px;
+            background: #fff;
+            font-size: 0.68rem;
+        }
+
+        .result-rule {
+            height: 1px;
+            margin: 1.4rem 0 2.2rem;
+            background: linear-gradient(90deg, var(--court-coral) 28%, #dce3ed 28%);
+        }
+
+        .final-report section {
+            margin-bottom: 2.4rem;
+        }
+
+        .final-report section h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin: 0 0 1rem !important;
+            font-size: 0.9rem !important;
+            font-family: inherit !important;
+            font-weight: 800;
+        }
+
+        .final-report section h2::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #dce3ed;
+        }
+
+        .final-report section h2 em {
+            color: var(--court-coral);
+            font-size: 0.75rem;
+            font-style: normal;
+        }
+
+        .result-section-copy {
+            margin: -0.65rem 0 1rem 1.75rem;
+            color: #8b98ad;
+            font-size: 0.72rem;
+        }
+
+        .result-score-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.55rem;
+        }
+
+        .result-score-card {
+            min-height: 92px;
+            padding: 0.85rem 0.9rem;
+            border: 1px solid #dce3ed;
+            border-top: 3px solid #f4a300;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .result-score-card.good { border-top-color: #15b981; }
+        .result-score-card.bad { border-top-color: var(--court-coral); }
+
+        .result-score-card > div {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .result-score-card strong { font-size: 0.72rem; }
+        .result-score-card span {
+            padding: 0.15rem 0.35rem;
+            color: #c98100;
+            border-radius: 4px;
+            background: #fff5d9;
+            font-size: 0.58rem;
+            font-weight: 800;
+        }
+        .result-score-card.good span { color: #099d70; background: #e5faf3; }
+        .result-score-card.bad span { color: #e64b40; background: #ffebe9; }
+        .result-score-card p { margin: 0.65rem 0 0; color: #57657b; font-size: 0.65rem; line-height: 1.5; }
+
+        .result-thesis {
+            margin: 1.1rem auto 0;
+            padding: 1.1rem 1.25rem;
+            border: 1px solid #dce3ed;
+            border-radius: 10px;
+        }
+
+        .result-thesis blockquote {
+            margin: 0 0 1rem;
+            padding-left: 0.8rem;
+            border-left: 2px solid var(--court-coral);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .result-thesis dl { display: grid; grid-template-columns: 70px 1fr 70px 1fr; gap: 0.65rem; margin: 0; }
+        .result-thesis dt { color: #92a0b4; font-size: 0.62rem; }
+        .result-thesis dd { margin: 0; padding-bottom: 0.4rem; border-bottom: 1px solid #e3e8f0; font-size: 0.68rem; }
+
+        .result-evidence {
+            display: flex;
+            gap: 0.9rem;
+            margin-bottom: 0.55rem;
+            padding: 0.8rem 1rem;
+            border: 1px solid #dce3ed;
+            border-left: 3px solid #15b981;
+            border-radius: 9px;
+        }
+        .result-evidence.warn { border-left-color: #f4a300; }
+        .result-evidence.bad { border-left-color: var(--court-coral); }
+        .result-evidence > b { color: #15b981; }
+        .result-evidence.warn > b { color: #f4a300; }
+        .result-evidence.bad > b { color: var(--court-coral); }
+        .result-evidence strong { display: block; font-size: 0.72rem; }
+        .result-evidence small { display: block; margin-top: 0.25rem; color: #74839a; font-size: 0.62rem; }
+
+        .result-bias {
+            display: grid;
+            grid-template-columns: 82px 1fr;
+            gap: 0.8rem;
+            margin-bottom: 0.55rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid #dce3ed;
+            border-left: 3px solid #f4a300;
+            border-radius: 9px;
+        }
+        .result-bias strong { padding: 0.45rem; color: #a86800; border: 1px solid #f1c665; border-radius: 7px; background: #fffaf0; text-align: center; font-size: 0.68rem; }
+        .result-bias p { margin: 0; align-self: center; font-size: 0.68rem; line-height: 1.5; }
+
+        .result-qa {
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            color: #fff;
+            border-radius: 10px;
+            background: #111a2d;
+            box-shadow: 0 3px 10px rgba(18, 27, 46, 0.12);
+        }
+        .result-qa > div { display: flex; align-items: center; gap: 0.7rem; padding: 0.75rem 1rem 0; }
+        .result-qa small { color: #7f8da5; font-weight: 800; }
+        .result-qa span { padding: 0.2rem 0.45rem; color: #ffd95f; border: 1px solid #826c1d; border-radius: 5px; font-size: 0.58rem; font-weight: 800; }
+        .result-qa > strong { display: block; padding: 0.65rem 1rem 0.9rem; font-size: 0.72rem; line-height: 1.55; }
+        .result-qa > p { margin: 0; padding: 0.75rem 1rem; color: #bc6c1b; background: #fff9e8; font-size: 0.68rem; font-style: italic; }
+
+        .result-empty {
+            padding: 1rem;
+            color: #8694aa;
+            border: 1px solid #dce3ed;
+            border-radius: 9px;
+            text-align: center;
+            font-size: 0.7rem;
+            font-style: italic;
+        }
+
+        .result-checklist { margin: 0; padding: 0; overflow: hidden; border: 1px solid #dce3ed; border-radius: 9px; list-style: none; }
+        .result-checklist li { display: flex; gap: 0.8rem; padding: 0.75rem 1rem; border-bottom: 1px solid #dce3ed; font-size: 0.66rem; }
+        .result-checklist li:last-child { border-bottom: 0; }
+        .result-checklist i { width: 12px; height: 12px; flex: 0 0 auto; border: 1px solid #cfd8e6; border-radius: 2px; }
+
+        .result-limitations { overflow: hidden; border: 1px solid #dce3ed; border-radius: 9px; }
+        .result-limitations summary { padding: 0.8rem 1rem; font-size: 0.7rem; font-weight: 800; cursor: pointer; }
+        .result-limitations ul { margin: 0; padding: 0.8rem 1.7rem 1rem; border-top: 1px solid #dce3ed; color: #64738a; font-size: 0.64rem; line-height: 1.8; }
+        .result-api-warning { margin-bottom: 1rem; padding: 0.8rem; color: #9a6500; border-radius: 8px; background: #fff9df; }
+
+        [data-testid="stMainBlockContainer"]:has(.final-report) > div > div > div[data-testid="stHorizontalBlock"] {
+            padding-top: 1rem;
+            border-top: 1px solid #dce3ed;
+        }
+
         @media (max-width: 720px) {
             [data-testid="stMainBlockContainer"] {
                 padding: 0 1rem 4rem;
@@ -1136,6 +1338,10 @@ def apply_global_styles() -> None:
                 grid-template-columns: 1fr 1fr;
                 gap: 0.45rem 0.8rem;
             }
+
+            .result-score-grid { grid-template-columns: 1fr; }
+            .result-thesis dl { grid-template-columns: 70px 1fr; }
+            .result-bias { grid-template-columns: 1fr; }
         }
         </style>
         """,
