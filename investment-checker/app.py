@@ -208,6 +208,7 @@ scroll_to_top_on_screen_change(workflow_screen)
 
 if workflow_screen == "portfolio":
     render_step_navigation("portfolio")
+    st.markdown('<span class="survey-scale-marker"></span>', unsafe_allow_html=True)
     st.markdown(
         """
         <section class="page-hero">
@@ -340,6 +341,7 @@ if workflow_screen == "portfolio":
 
 if workflow_screen == "criteria":
     render_step_navigation("criteria")
+    st.markdown('<span class="survey-scale-marker"></span>', unsafe_allow_html=True)
     if st.button("← 포트폴리오 입력으로", key="criteria_back"):
         st.session_state["workflow_screen"] = "portfolio"
         st.rerun()
@@ -896,6 +898,7 @@ if workflow_screen == "finalize_result" and cross_examination:
     st.rerun()
 
 if cross_examination and not st.session_state.get("final_cross_examination"):
+    st.markdown('<span class="survey-scale-marker"></span>', unsafe_allow_html=True)
     questions = ensure_three_followup_questions(list(cross_examination["questions"]))
     cross_examination["questions"] = questions
     question_count = len(questions)

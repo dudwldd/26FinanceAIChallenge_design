@@ -60,6 +60,16 @@ def apply_global_styles() -> None:
             display: none;
         }
 
+        .survey-scale-marker {
+            display: none;
+        }
+
+        [data-testid="stMainBlockContainer"]:has(.survey-scale-marker) {
+            width: 111.111%;
+            max-width: 978px !important;
+            zoom: 0.9;
+        }
+
         h1, h2, h3 {
             color: var(--court-ink);
             letter-spacing: -0.035em;
@@ -1136,7 +1146,7 @@ def apply_global_styles() -> None:
             align-items: center;
             gap: 0.65rem;
             margin: 0 0 1rem !important;
-            font-size: 0.9rem !important;
+            font-size: 1.08rem !important;
             font-family: inherit !important;
             font-weight: 800;
         }
@@ -1150,7 +1160,7 @@ def apply_global_styles() -> None:
 
         .final-report section h2 em {
             color: var(--court-coral);
-            font-size: 0.75rem;
+            font-size: 0.84rem;
             font-style: normal;
         }
 
