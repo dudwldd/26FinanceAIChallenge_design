@@ -798,7 +798,7 @@ def apply_global_styles() -> None:
 
         .result-analysis-loading .loading-card {
             width: min(500px, calc(100vw - 3rem));
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             padding: 1.15rem 1.35rem;
             border-radius: 17px;
         }
